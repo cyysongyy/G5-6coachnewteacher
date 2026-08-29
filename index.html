@@ -54,11 +54,6 @@ body{
 }
 .ghost-btn{ width:100%; padding:13px; border-radius:12px; border:1px solid var(--border); background:var(--card); color:var(--text); font-size:calc(14px * var(--fs)); font-weight:600; cursor:pointer; }
 .danger-btn{ background:var(--danger); color:#fff; border:none; }
-.quickgrid{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:14px 0; }
-.quickgrid button{ background:var(--card); border:1px solid var(--border); border-radius:14px; padding:12px 4px; font-size:calc(12px * var(--fs)); cursor:pointer; color:var(--text); }
-.quickgrid .qe{ font-size:calc(22px * var(--fs)); display:block; margin-bottom:4px; }
-.scorewrap{ display:flex; align-items:center; gap:14px; }
-.scorenum{ font-size:calc(32px * var(--fs)); font-weight:800; }
 .bar-outer{ background:var(--border); border-radius:8px; height:10px; overflow:hidden; flex:1; }
 .bar-inner{ height:100%; background:var(--accent); border-radius:8px; }
 .chip-row{ display:flex; flex-wrap:wrap; gap:8px; }
@@ -112,6 +107,60 @@ input[type=range]{ width:100%; }
 .pill-select{ display:flex; gap:8px; flex-wrap:wrap; }
 .badge{ display:inline-block; font-size:calc(11px * var(--fs)); padding:2px 8px; border-radius:999px; background:var(--border); color:var(--text); margin-right:4px; }
 a.linklike{ color:var(--accent); text-decoration:none; font-weight:600; }
+
+/* Home */
+.home-header{ display:flex; align-items:center; gap:12px; margin:calc(4px + env(safe-area-inset-top)) 0 18px; }
+.home-logo{ width:42px; height:42px; border-radius:13px; flex-shrink:0; background:linear-gradient(135deg,#4f7cff,#22d3ee);
+  display:flex; align-items:center; justify-content:center; font-size:calc(20px * var(--fs)); }
+.home-header h1{ margin:0; font-size:calc(19px * var(--fs)); line-height:1.2; }
+.home-header .sub{ font-size:calc(11.5px * var(--fs)); color:var(--muted); }
+.hero{
+  position:relative; overflow:hidden; border-radius:var(--radius); padding:22px 20px; margin-bottom:var(--gap);
+  background:linear-gradient(135deg,#eaf6ff 0%,#eafff3 100%); color:#12324a; border:1px solid rgba(0,0,0,.04);
+}
+@media (prefers-color-scheme: dark){ .hero{ background:linear-gradient(135deg,#123049 0%,#0f2e22 100%); color:#eafff6; } }
+.hero h2{ margin:0 0 6px; font-size:calc(21px * var(--fs)); line-height:1.35; }
+.hero h2 .accent{ color:#ff8a3d; }
+.hero p{ margin:0; font-size:calc(13px * var(--fs)); opacity:.7; }
+.cta-banner{
+  display:flex; align-items:center; gap:14px; width:100%; border:none; cursor:pointer; text-align:left;
+  padding:16px 18px; border-radius:var(--radius); margin-bottom:var(--gap); color:#fff;
+  background:linear-gradient(120deg,#3b82f6,#06b6d4);
+}
+.cta-banner .cta-icon{ width:42px; height:42px; border-radius:50%; background:rgba(255,255,255,.22); flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; font-size:calc(20px * var(--fs)); }
+.cta-banner .cta-text{ flex:1; }
+.cta-banner .cta-title{ font-size:calc(16px * var(--fs)); font-weight:800; }
+.cta-banner .cta-sub{ font-size:calc(11.5px * var(--fs)); opacity:.85; margin-top:2px; }
+.cta-banner .cta-arrow{ font-size:calc(18px * var(--fs)); opacity:.85; }
+.cat-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:var(--gap); }
+.cat-card{ position:relative; border-radius:16px; padding:14px 12px 38px; cursor:pointer; border:none; text-align:left; color:#20242b; }
+.cat-card .ce{ font-size:calc(24px * var(--fs)); display:block; margin-bottom:6px; }
+.cat-card .ct{ font-size:calc(14.5px * var(--fs)); font-weight:800; display:block; }
+.cat-card .cs{ font-size:calc(11px * var(--fs)); opacity:.65; display:block; margin-top:2px; }
+.cat-card .arrow{ position:absolute; right:12px; bottom:12px; width:24px; height:24px; border-radius:50%; background:rgba(0,0,0,.08);
+  display:flex; align-items:center; justify-content:center; font-size:calc(12px * var(--fs)); }
+.cc-student{ background:linear-gradient(160deg,#dbeafe,#f4f9ff); }
+.cc-classroom{ background:linear-gradient(160deg,#fde9c8,#fff9ee); }
+.cc-teaching{ background:linear-gradient(160deg,#d9f2df,#f3fbf4); }
+.cc-people{ background:linear-gradient(160deg,#e6defb,#f7f3ff); }
+.mental-card{ display:flex; align-items:center; gap:16px; }
+.mental-ring{ flex-shrink:0; position:relative; width:88px; height:88px; }
+.mental-ring svg{ display:block; }
+.mental-ring .ring-num{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.mental-ring .ring-num b{ font-size:calc(21px * var(--fs)); }
+.mental-ring .ring-num span{ font-size:calc(9.5px * var(--fs)); color:var(--muted); }
+.mental-stats{ display:flex; margin-top:14px; padding-top:12px; border-top:1px solid var(--border); }
+.mental-stats .ms-item{ text-align:center; flex:1; }
+.mental-stats .ms-num{ font-size:calc(15px * var(--fs)); font-weight:800; display:block; }
+.mental-stats .ms-lbl{ font-size:calc(10px * var(--fs)); color:var(--muted); }
+.tips-head{ display:flex; align-items:center; justify-content:space-between; margin:20px 0 8px; }
+.tips-head .section-title{ margin:0; }
+.tips-row{ display:flex; gap:10px; overflow-x:auto; padding-bottom:6px; -webkit-overflow-scrolling:touch; }
+.tip-card{ flex:0 0 auto; width:148px; background:var(--card); border:1px solid var(--border); border-radius:14px; padding:12px; cursor:pointer; }
+.tip-card .te{ font-size:calc(18px * var(--fs)); }
+.tip-card .tt{ font-size:calc(12.5px * var(--fs)); font-weight:700; margin:6px 0 2px; line-height:1.3; }
+.tip-card .ts{ font-size:calc(11px * var(--fs)); color:var(--muted); line-height:1.3; }
 </style>
 </head>
 <body>
@@ -141,10 +190,20 @@ const CATEGORIES = [
   {id:'people',    label:'人事（成人關係）', emoji:'🤝', theoryCat:'E', color:'var(--c-people)'},
 ];
 const QUICK_ENTRIES = [
-  {emoji:'🧑‍🎓', label:'學生', cat:'student'},
-  {emoji:'🏫', label:'班級', cat:'classroom'},
-  {emoji:'📚', label:'教學', cat:'teaching'},
-  {emoji:'🤝', label:'成人關係', cat:'people'},
+  {emoji:'🧑‍🎓', label:'學生', sub:'學生行為與輔導', cat:'student', cls:'cc-student'},
+  {emoji:'🏫', label:'班級', sub:'班級經營與氣氛', cat:'classroom', cls:'cc-classroom'},
+  {emoji:'📚', label:'教學', sub:'教學策略與設計', cat:'teaching', cls:'cc-teaching'},
+  {emoji:'🤝', label:'成人關係', sub:'家長、同事溝通合作', cat:'people', cls:'cc-people'},
+];
+const TIPS = [
+  {icon:'💡', title:'新手老師生存法則 #1', sub:'先求穩定常規，再求豐富教學'},
+  {icon:'💡', title:'新手老師生存法則 #2', sub:'每天只做一個小改變就好'},
+  {icon:'💬', title:'如何有效處理學生衝突？', sub:'先分開、再談話，不當場評對錯'},
+  {icon:'📋', title:'班級經營檢核清單', sub:'快速檢視今天的班級狀態'},
+  {icon:'🧠', title:'事實 vs 解讀', sub:'先區分客觀事實，再談你的感受'},
+  {icon:'🎯', title:'今天只實驗一件事', sub:'小步調整，比一次改十件事更有效'},
+  {icon:'🤝', title:'跟家長溝通的第一句話', sub:'先肯定，再說明，最後才提請求'},
+  {icon:'🌱', title:'成長型思維', sub:'這次沒處理好，是下一次的練習機會'},
 ];
 const LEVELS = [
   {id:1, label:'Level 1．個人行為', desc:'單一學生的個別行為表現。例：一位學生上課分心、忘記帶作業。'},
@@ -275,7 +334,7 @@ const AI_QNA_SYSTEM_PROMPT = `你是一位資深國小高年級導師、教學�
 遇到明顯涉及人身安全、法律責任、或需要正式通報的狀況，請提醒教師依學校正式程序處理、諮詢輔導室或行政主管，不要只給操作建議。
 請一律用繁體中文回覆，語氣專業、溫暖、簡潔，避免空泛的鼓勵語，也不要用「我不是專業人士」這類免責聲明開頭。`;
 
-const APP_BUILD = 'v1.6 · 2026-08-29 03:25 UTC';
+const APP_BUILD = 'v1.7 · 2026-08-29 03:38 UTC';
 
 const LS_KEY = 'teacherCoachData_v1';
 
@@ -397,6 +456,7 @@ const TC = {
   flow: null, // {step, branch, draft, editingId}
   detailId: null,
   qnaLoading: false,
+  tipsOffset: 0,
 
   goTab(tab){ this.flow=null; this.detailId=null; this.tab=tab; render(); },
   back(){
@@ -545,6 +605,7 @@ const TC = {
   setAIKey(provider, value){ DB.settings.ai.keys[provider] = value; saveData(); },
   setAIModel(provider, value){ DB.settings.ai.models[provider] = value; saveData(); },
   setFontScale(value){ DB.settings.fontScale = value; saveData(); applyFontScale(); render(); },
+  moreTips(){ this.tipsOffset = (this.tipsOffset + 3) % TIPS.length; render(); },
   async testAIConnection(){
     const provider = DB.settings.ai.provider;
     if(!provider){ toast('請先選擇 AI 服務'); return; }
@@ -641,12 +702,41 @@ function todayMentalScore(){
   if(!scores.length) return 80;
   return Math.round(scores.reduce((a,b)=>a+b,0)/scores.length);
 }
+function currentStreak(){
+  const dates = new Set(DB.events.map(e=>e.date));
+  const cursor = new Date();
+  if(!dates.has(todayStr())) cursor.setDate(cursor.getDate()-1);
+  let streak = 0;
+  while(dates.has(cursor.toISOString().slice(0,10))){
+    streak++; cursor.setDate(cursor.getDate()-1);
+  }
+  return streak;
+}
+function weekAvgScore(){
+  const now = new Date();
+  const monday = new Date(now); monday.setDate(now.getDate() - ((now.getDay()+6)%7));
+  const mondayStr = monday.toISOString().slice(0,10);
+  const scores = DB.events.filter(e=>e.date>=mondayStr && !e.isHighRisk).map(compositeScore).filter(s=>s!=null);
+  return scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : null;
+}
+function ringSVG(percent, size){
+  size = size||88;
+  const r = size/2 - 8;
+  const c = 2*Math.PI*r;
+  const off = c * (1 - Math.max(0,Math.min(100,percent))/100);
+  return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--border)" stroke-width="8"/>
+    <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--accent)" stroke-width="8" stroke-linecap="round"
+      stroke-dasharray="${c}" stroke-dashoffset="${off}" transform="rotate(-90 ${size/2} ${size/2})"/>
+  </svg>`;
+}
 
 /* ---------- Render：主入口 ---------- */
 function render(){
   document.getElementById('backBtn').style.display = (TC.flow||TC.detailId) ? '' : 'none';
   document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active', !TC.flow && !TC.detailId && b.dataset.tab===TC.tab));
   document.getElementById('tabbar').style.display = (TC.flow) ? 'none' : 'flex';
+  document.getElementById('topbar').style.display = (TC.tab==='home' && !TC.flow && !TC.detailId) ? 'none' : 'flex';
 
   const root = document.getElementById('view-root');
   const title = document.getElementById('topTitle');
@@ -671,9 +761,32 @@ function flowTitle(f){
 function renderHome(){
   const score = todayMentalScore();
   const todayCount = DB.events.filter(e=>e.date===todayStr()).length;
+  const streak = currentStreak();
+  const weekAvg = weekAvgScore();
   const pending = DB.events.find(e=> e.experiment && e.experiment.plan && !e.experiment.result && e.date!==todayStr());
 
-  let html = '';
+  let html = `<div class="home-header">
+    <div class="home-logo">🧑‍🏫</div>
+    <div>
+      <h1>Teacher Coach</h1>
+      <div class="sub">新手老師教練模式</div>
+    </div>
+  </div>`;
+
+  html += `<div class="hero">
+    <h2>今天遇到什麼<span class="accent">挑戰</span>？</h2>
+    <p>每一次解決，都是成長！</p>
+  </div>`;
+
+  html += `<button class="cta-banner" onclick="TC.startNewEvent()">
+    <span class="cta-icon">➕</span>
+    <span class="cta-text">
+      <div class="cta-title">新增事件</div>
+      <div class="cta-sub">記錄挑戰，獲得建議，一起找到解方！</div>
+    </span>
+    <span class="cta-arrow">›</span>
+  </button>`;
+
   if(pending){
     html += `<div class="card">
       <h2>🧪 昨天的實驗，結果如何？</h2>
@@ -689,21 +802,41 @@ function renderHome(){
     </div>`;
   }
 
-  html += `<div class="card">
-    <h2>今天遇到什麼問題？</h2>
-    <button class="big-btn" onclick="TC.startNewEvent()">＋ 新增事件</button>
-    <div class="quickgrid">
-      ${QUICK_ENTRIES.map(q=>`<button onclick="TC.startNewEvent('${q.cat}')"><span class="qe">${q.emoji}</span>${q.label}</button>`).join('')}
-    </div>
+  html += `<div class="cat-grid">
+    ${QUICK_ENTRIES.map(q=>`<button class="cat-card ${q.cls}" onclick="TC.startNewEvent('${q.cat}')">
+      <span class="ce">${q.emoji}</span>
+      <span class="ct">${q.label}</span>
+      <span class="cs">${q.sub}</span>
+      <span class="arrow">›</span>
+    </button>`).join('')}
   </div>`;
 
   html += `<div class="card">
-    <h2>今日 Mental Strength</h2>
-    <div class="scorewrap">
-      <div class="scorenum">${score}</div>
-      <div class="bar-outer"><div class="bar-inner" style="width:${score}%"></div></div>
+    <div class="mental-card">
+      <div class="mental-ring">
+        ${ringSVG(score)}
+        <div class="ring-num"><b>${score}</b><span>/100</span></div>
+      </div>
+      <div style="flex:1">
+        <h2 style="margin:0 0 4px">今日 Mental Strength</h2>
+        <p class="muted" style="margin:0">今天你已經處理了 ${todayCount} 個事件，繼續前進吧！</p>
+      </div>
     </div>
-    <p class="muted" style="margin-top:10px">今天你已經處理了 ${todayCount} 個事件。</p>
+    <div class="mental-stats">
+      <div class="ms-item"><span class="ms-num">${todayCount}</span><span class="ms-lbl">今日事件</span></div>
+      <div class="ms-item"><span class="ms-num">${weekAvg==null?'—':weekAvg}</span><span class="ms-lbl">本週平均分數</span></div>
+      <div class="ms-item"><span class="ms-num">🔥${streak}</span><span class="ms-lbl">連續紀錄天數</span></div>
+    </div>
+  </div>`;
+
+  const tips = [0,1,2].map(i => TIPS[(TC.tipsOffset+i) % TIPS.length]);
+  html += `<div class="tips-head"><div class="section-title">為你推薦</div><a class="linklike" onclick="TC.moreTips()">查看更多 ›</a></div>
+  <div class="tips-row">
+    ${tips.map(t=>`<div class="tip-card" onclick="TC.moreTips()">
+      <div class="te">${t.icon}</div>
+      <div class="tt">${esc(t.title)}</div>
+      <div class="ts">${esc(t.sub)}</div>
+    </div>`).join('')}
   </div>`;
 
   const recent = DB.events.slice().sort((a,b)=> (b.savedAt||'').localeCompare(a.savedAt||'')).slice(0,5);
