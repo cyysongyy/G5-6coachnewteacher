@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#4f7cff">
+<title>Teacher Coach 教師教練</title>
+<meta name="description" content="把每天的班級事件，變成我的教師成長訓練。單機版，資料只存在這支手機裡。">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.svg">
+<style>
+:root{
+  --bg:#f5f6f8; --card:#ffffff; --text:#1c1c1e; --muted:#6b6b70; --border:#e5e5ea;
+  --accent:#4f7cff; --accent-ink:#ffffff; --danger:#e5484d; --warn:#b8770a; --warn-bg:#fff4e0;
+  --good:#1f9254; --good-bg:#e8f7ee; --radius:16px; --gap:12px;
+  --c-student:#ff6b6b; --c-classroom:#4f7cff; --c-teaching:#0fa3a3; --c-admin:#8451e0; --c-people:#e08e00;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#0f0f11; --card:#1b1b1e; --text:#f2f2f3; --muted:#9a9aa0; --border:#2c2c30;
+    --warn-bg:#3a2c0f; --good-bg:#0f2b1c; }
+}
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC",Segoe UI,Roboto,sans-serif;
+  -webkit-tap-highlight-color:transparent;
+}
+#app{ max-width:560px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; padding-bottom:calc(64px + env(safe-area-inset-bottom)); }
+#topbar{
+  position:sticky; top:0; z-index:10; background:var(--bg); padding:calc(14px + env(safe-area-inset-top)) 16px 10px;
+  display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border);
+}
+#topbar h1{ font-size:17px; margin:0; flex:1; }
+.iconbtn{
+  border:none; background:var(--card); color:var(--text); border-radius:12px; width:36px; height:36px;
+  font-size:18px; display:flex; align-items:center; justify-content:center; cursor:pointer; border:1px solid var(--border);
+}
+#view-root{ flex:1; padding:16px; padding-bottom:32px; }
+#tabbar{
+  position:fixed; bottom:0; left:0; right:0; background:var(--card); border-top:1px solid var(--border);
+  display:flex; padding-bottom:env(safe-area-inset-bottom); max-width:560px; margin:0 auto;
+}
+.tab{ flex:1; background:none; border:none; padding:8px 4px 10px; color:var(--muted); font-size:11px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:2px;}
+.tab.active{ color:var(--accent); font-weight:600; }
+.tab .ti{ font-size:20px; }
+
+.card{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:var(--gap); }
+.card h2{ font-size:15px; margin:0 0 10px; }
+.muted{ color:var(--muted); font-size:13px; }
+.big-btn{
+  width:100%; padding:16px; border-radius:var(--radius); border:none; background:var(--accent); color:var(--accent-ink);
+  font-size:16px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.ghost-btn{ width:100%; padding:13px; border-radius:12px; border:1px solid var(--border); background:var(--card); color:var(--text); font-size:14px; font-weight:600; cursor:pointer; }
+.danger-btn{ background:var(--danger); color:#fff; border:none; }
+.quickgrid{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:14px 0; }
+.quickgrid button{ background:var(--card); border:1px solid var(--border); border-radius:14px; padding:12px 4px; font-size:12px; cursor:pointer; color:var(--text); }
+.quickgrid .qe{ font-size:22px; display:block; margin-bottom:4px; }
+.scorewrap{ display:flex; align-items:center; gap:14px; }
+.scorenum{ font-size:32px; font-weight:800; }
+.bar-outer{ background:var(--border); border-radius:8px; height:10px; overflow:hidden; flex:1; }
+.bar-inner{ height:100%; background:var(--accent); border-radius:8px; }
+.chip-row{ display:flex; flex-wrap:wrap; gap:8px; }
+.chip{ padding:9px 14px; border-radius:999px; border:1px solid var(--border); background:var(--card); font-size:13px; cursor:pointer; color:var(--text); }
+.chip.selected{ background:var(--accent); color:#fff; border-color:var(--accent); }
+label.field{ display:block; font-size:13px; font-weight:600; margin:14px 0 6px; }
+label.field:first-child{ margin-top:0; }
+input[type=text],input[type=number],input[type=date],textarea,select{
+  width:100%; padding:11px 12px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text); font-size:15px; font-family:inherit;
+}
+textarea{ min-height:70px; resize:vertical; }
+.hint{ font-size:12px; color:var(--muted); margin-top:4px; }
+.banner{ border-radius:12px; padding:12px 14px; font-size:13px; margin-bottom:12px; line-height:1.6; }
+.banner.warn{ background:var(--warn-bg); color:var(--warn); }
+.banner.good{ background:var(--good-bg); color:var(--good); }
+.progress-dots{ display:flex; gap:5px; justify-content:center; margin-bottom:14px; }
+.progress-dots span{ width:7px; height:7px; border-radius:50%; background:var(--border); }
+.progress-dots span.on{ background:var(--accent); }
+.steplabel{ text-align:center; font-size:12px; color:var(--muted); margin-bottom:10px; }
+.footer-nav{ display:flex; gap:10px; margin-top:18px; }
+.footer-nav .big-btn, .footer-nav .ghost-btn{ flex:1; }
+.theory-card{ border:1px solid var(--border); border-radius:12px; padding:12px; margin-bottom:8px; }
+.theory-card h3{ margin:0 0 4px; font-size:14px; }
+.theory-card .tag{ font-size:11px; color:var(--accent); font-weight:700; }
+.theory-card p{ margin:4px 0 0; font-size:12.5px; color:var(--muted); line-height:1.5; }
+.qa{ margin-bottom:10px; }
+.qa p.q{ font-size:13.5px; font-weight:600; margin:0 0 6px; }
+.event-row{ display:flex; align-items:center; gap:10px; padding:12px; background:var(--card); border:1px solid var(--border); border-radius:12px; margin-bottom:8px; cursor:pointer; }
+.event-row .dot{ width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.event-row .et{ flex:1; min-width:0; }
+.event-row .et .title{ font-size:14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.event-row .et .meta{ font-size:12px; color:var(--muted); }
+.date-sep{ font-size:12px; color:var(--muted); margin:16px 0 8px; font-weight:600; }
+.emoji-row{ display:flex; gap:8px; flex-wrap:wrap; }
+.emoji-btn{ display:flex; flex-direction:column; align-items:center; gap:2px; border:1px solid var(--border); background:var(--card); border-radius:12px; padding:10px 12px; cursor:pointer; font-size:11px; color:var(--text); }
+.emoji-btn .em{ font-size:22px; }
+.emoji-btn.selected{ border-color:var(--accent); background:var(--accent); color:#fff; }
+input[type=range]{ width:100%; }
+.kv{ display:flex; justify-content:space-between; font-size:13px; padding:6px 0; border-bottom:1px solid var(--border); }
+.kv:last-child{ border-bottom:none; }
+.kv .k{ color:var(--muted); }
+.bars{ display:flex; flex-direction:column; gap:10px; }
+.bar-item .lbl{ display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:4px; }
+.section-title{ font-size:13px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; margin:20px 0 8px; }
+.toast{
+  position:fixed; bottom:calc(76px + env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%);
+  background:#1c1c1e; color:#fff; padding:10px 18px; border-radius:999px; font-size:13px; z-index:50; opacity:0; pointer-events:none; transition:opacity .2s;
+}
+.toast.show{ opacity:1; }
+.empty{ text-align:center; color:var(--muted); font-size:13px; padding:40px 10px; }
+.pill-select{ display:flex; gap:8px; flex-wrap:wrap; }
+.badge{ display:inline-block; font-size:11px; padding:2px 8px; border-radius:999px; background:var(--border); color:var(--text); margin-right:4px; }
+a.linklike{ color:var(--accent); text-decoration:none; font-weight:600; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="topbar">
+    <button class="iconbtn" id="backBtn" style="display:none" onclick="TC.back()">‹</button>
+    <h1 id="topTitle">Teacher Coach</h1>
+  </div>
+  <main id="view-root"></main>
+  <nav id="tabbar">
+    <button class="tab" data-tab="home" onclick="TC.goTab('home')"><span class="ti">🏠</span>今天</button>
+    <button class="tab" data-tab="history" onclick="TC.goTab('history')"><span class="ti">🗂️</span>記錄</button>
+    <button class="tab" data-tab="dashboard" onclick="TC.goTab('dashboard')"><span class="ti">📊</span>成長</button>
+    <button class="tab" data-tab="settings" onclick="TC.goTab('settings')"><span class="ti">⚙️</span>設定</button>
+  </nav>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- 資料常數 ---------- */
+const CATEGORIES = [
+  {id:'student',   label:'學生衝突', emoji:'🧑‍🎓', theoryCat:'A', color:'var(--c-student)'},
+  {id:'classroom', label:'班級經營', emoji:'🏫', theoryCat:'B', color:'var(--c-classroom)'},
+  {id:'teaching',  label:'教學',    emoji:'📚', theoryCat:'C', color:'var(--c-teaching)'},
+  {id:'admin',     label:'行政',    emoji:'🏢', theoryCat:'D', color:'var(--c-admin)'},
+  {id:'people',    label:'人事（成人關係）', emoji:'🤝', theoryCat:'E', color:'var(--c-people)'},
+];
+const QUICK_ENTRIES = [
+  {emoji:'🧑‍🎓', label:'學生', cat:'student'},
+  {emoji:'🏫', label:'班級', cat:'classroom'},
+  {emoji:'📚', label:'教學', cat:'teaching'},
+  {emoji:'🤝', label:'成人關係', cat:'people'},
+];
+const LEVELS = [
+  {id:1, label:'Level 1．個人行為', desc:'單一學生的個別行為表現。例：一位學生上課分心、忘記帶作業。'},
+  {id:2, label:'Level 2．人際關係', desc:'學生與學生、或師生之間的互動與關係問題。例：同儕衝突、師生對立。'},
+  {id:3, label:'Level 3．班級系統', desc:'全班層級的常規、文化或結構性問題。例：多數學生講話、班規不清楚。'},
+  {id:4, label:'Level 4．學校制度', desc:'跨班級、行政規定或學校制度層面的問題。例：跨班衝突、資源分配。'},
+];
+const RISK_ITEMS = [
+  '有肢體傷害或人身安全疑慮',
+  '疑似長期霸凌或欺凌模式',
+  '學生出現自傷／自殺相關言語或行為',
+  '疑似不當對待、虐待或性騷擾疑慮',
+  '家長已正式投訴或提及法律行動',
+  '依法規屬於強制通報事件（如校安或兒少保護通報）',
+];
+const PERIODS = ['早自習','上課中','下課','午休','放學後','其他'];
+const EMOTIONS = [
+  {id:'angry',emoji:'😡',label:'生氣'},
+  {id:'anxious',emoji:'😰',label:'焦慮'},
+  {id:'frustrated',emoji:'😔',label:'挫折'},
+  {id:'afraid',emoji:'😨',label:'害怕'},
+  {id:'powerless',emoji:'😤',label:'無力'},
+  {id:'ok',emoji:'🙂',label:'還好／平靜'},
+];
+const AGENCY_OPTIONS = ['我的語氣','我的規則','我的反應','我的課程設計','我的溝通方式','我的紀錄','我的下一個行動'];
+const RESILIENCE_SKILLS = ['班級經營能力','衝突處理能力','情緒調節能力','溝通表達能力','課程設計能力','觀察覺察能力','界線設定能力','復原力／韌性'];
+
+const COACH_QUESTIONS = {
+  student: ['雙方現在的情緒狀態如何？','衝突發生前的導火線是什麼？','這是第一次發生，還是重複出現的模式？','學生知道學校／班級對這類行為的處理方式嗎？'],
+  classroom: ['你今天提醒了幾次？','每一次提醒的方式是否一樣？','學生知道不遵守規則的後果嗎？','你現在處理的是單一學生行為，還是班級規範尚未建立？'],
+  teaching: ['這個狀況發生在教學的哪個環節？（講述／練習／討論／評量）','大約多少比例的學生出現這個狀況？','這是學生能力不足，還是任務設計不吻合需求？','你希望學生透過這個任務學到什麼？'],
+  admin: ['這件事情牽涉哪些人的權責與立場？','有沒有明確的溝通期限或決策點？','如果站在對方的角度，他／她在意的是什麼？','這次溝通後，你希望達成什麼具體結果？'],
+  people: ['對方的立場與你有什麼不同？','這是單一事件，還是長期累積的摩擦？','你需要設定什麼界線來保護自己？','你希望這段關係接下來往什麼方向發展？'],
+};
+
+const SOLUTION_TEMPLATES = {
+  student:{
+    now:'先確保安全，將雙方暫時分開、各自安頓情緒；不在其他學生面前當場評斷誰對誰錯。',
+    tomorrow:'分別與雙方進行 5 分鐘個別談話，使用四個問句：發生什麼事？你感覺如何？你當時需要什麼？下一步可以怎麼做？必要時安排修復對話。',
+    longTerm:'建立班級「衝突處理四步驟」：STOP → CALM → TALK → REPAIR，並在晨會安排演練與情境練習。',
+  },
+  classroom:{
+    now:'立即但平靜地提出一個具體、可執行的行為要求，避免情緒化指責。',
+    tomorrow:'檢視目前班級常規是否清楚可見，必要時與全班重新討論並共訂規則與後果。',
+    longTerm:'採用 Kounin 的掌控全局（withitness）技巧與 PBIS 正向行為支持架構，建立可預期的常規與獎勵系統。',
+  },
+  teaching:{
+    now:'先降低任務難度或調整分組，確保多數學生能重新進入學習。',
+    tomorrow:'採用形成性評量快速了解學生落點（如一分鐘小測驗、舉手示意），依結果微調教學步調。',
+    longTerm:'以 UDL／差異化教學重新設計單元，提供多元表徵與練習方式，並融入檢索練習鞏固學習。',
+  },
+  admin:{
+    now:'先釐清這件事的權責歸屬與緊急程度，避免單方面倉促決定。',
+    tomorrow:'與相關同仁或主管簡短溝通，確認彼此對情況的理解一致，並列出可行方案。',
+    longTerm:'透過分散式領導與利害關係人溝通機制，建立更清楚的分工與決策流程，減少未來類似摩擦。',
+  },
+  people:{
+    now:'先釐清事實與自己的情緒，避免在情緒高漲時立即回應或做出承諾。',
+    tomorrow:'安排一對一溝通，採用非暴力溝通（觀察－感受－需要－請求）表達立場，並預留傾聽對方觀點的空間。',
+    longTerm:'透過困難對話技巧與心理安全感的建立，發展長期可信任的合作關係，並設定清楚的界線。',
+  },
+};
+
+const THEORY_LIBRARY = [
+  {cat:'A',name:'SEL 社會情緒學習',principle:'情緒覺察、人際技巧與負責任決策是可以被教導的能力。',app:'在衝突後帶學生辨識自己與對方的情緒，作為對話起點。'},
+  {cat:'A',name:'修復式實踐 Restorative Practices',principle:'關注傷害如何被修復，而非誰該被處罰。',app:'讓涉事雙方在安全引導下說出影響，並共同決定修復方式。'},
+  {cat:'A',name:'非暴力溝通 NVC',principle:'用觀察—感受—需要—請求取代指責與評價。',app:'引導學生用「我感覺…因為我需要…」表達，而非互相指控。'},
+  {cat:'A',name:'情緒教練 Emotion Coaching',principle:'先接住情緒，再處理行為與問題本身。',app:'先說「我看得出你很生氣」，再進入事情的討論。'},
+  {cat:'A',name:'觀點取替 Perspective Taking',principle:'理解對方感受與立場能降低衝突升溫。',app:'請學生說出「如果你是對方，你會怎麼想？」。'},
+  {cat:'A',name:'衝突解決 Conflict Resolution',principle:'衝突有固定可教的處理步驟與技巧。',app:'教學生用 STOP-CALM-TALK-REPAIR 四步驟處理糾紛。'},
+  {cat:'A',name:'成長型思維 Growth Mindset',principle:'能力與關係可以透過努力與練習改變。',app:'告訴學生「這次沒處理好沒關係，我們可以練習下一次怎麼做」。'},
+  {cat:'B',name:'Kounin 班級經營（Withitness）',principle:'老師對全班動態的掌握程度直接影響秩序。',app:'巡視時眼觀四方，在小問題擴大前用眼神或走近化解。'},
+  {cat:'B',name:'正向行為支持 PBIS',principle:'教導並增強期待行為，勝過單純懲罰不當行為。',app:'明確教導、示範並獎勵你希望看到的課堂行為。'},
+  {cat:'B',name:'回應式教室 Responsive Classroom',principle:'社會與學業學習同等重要，透過晨會與規則共創建立文化。',app:'用班級晨會共同討論並訂出「討論音量」等具體規範。'},
+  {cat:'B',name:'行為改變技術 Behavior Modification',principle:'行為受其後果（增強／消弱）影響而改變。',app:'一致地增強遵守常規的行為，減少對輕微違規的過度關注。'},
+  {cat:'B',name:'班級氣氛 Classroom Climate',principle:'安全、被尊重的氛圍是學習與行為的基礎。',app:'定期用簡短溫度計檢核班級的安全感與歸屬感。'},
+  {cat:'B',name:'自我決定理論 Self-Determination Theory',principle:'自主、勝任、歸屬三種需求被滿足時，動機與行為更穩定。',app:'給學生有限但真實的選擇權，例如作業形式或座位安排。'},
+  {cat:'C',name:'建構主義 Constructivism',principle:'學生透過連結既有經驗主動建構知識。',app:'先問學生已知的例子，再帶入新概念。'},
+  {cat:'C',name:'合作學習 Cooperative Learning',principle:'結構化的小組互賴能提升學習與人際技巧。',app:'指派明確角色分工，讓每位成員都有不可取代的任務。'},
+  {cat:'C',name:'通用學習設計 UDL',principle:'提供多元表徵、行動與參與方式，降低學習障礙。',app:'同一個概念同時提供圖像、文字與操作三種學習路徑。'},
+  {cat:'C',name:'差異化教學 Differentiated Instruction',principle:'依學生準備度、興趣與學習輪廓調整教學。',app:'同一單元設計基礎／挑戰兩種難度的練習任務。'},
+  {cat:'C',name:'形成性評量 Formative Assessment',principle:'教學中持續蒐集證據以調整教學。',app:'用一分鐘小測驗或舉手示意快速掌握學生理解狀況。'},
+  {cat:'C',name:'檢索練習 Retrieval Practice',principle:'主動回想比重複閱讀更能鞏固記憶。',app:'課堂結束前花 3 分鐘讓學生默寫今天學到的重點。'},
+  {cat:'C',name:'認知負荷理論 Cognitive Load Theory',principle:'工作記憶容量有限，過多資訊會阻礙學習。',app:'拆解複雜任務為分段步驟，避免一次呈現過多資訊。'},
+  {cat:'C',name:'後設認知 Metacognition',principle:'覺察並調節自己的學習歷程能提升學習成效。',app:'請學生在任務後寫下「我用了什麼方法？下次可以怎麼調整？」。'},
+  {cat:'D',name:'分散式領導 Distributed Leadership',principle:'領導力分散於團隊而非集中於單一角色。',app:'把跨班或跨處室的問題交由相關人員共同決策，而非單打獨鬥。'},
+  {cat:'D',name:'組織行為 Organizational Behavior',principle:'個人行為受組織結構與文化影響。',app:'思考這個問題是不是制度或流程設計造成，而不只是個人問題。'},
+  {cat:'D',name:'角色理論 Role Theory',principle:'角色期待不清楚時容易產生衝突與壓力。',app:'和相關人員明確釐清彼此的職責與期待範圍。'},
+  {cat:'D',name:'決策理論 Decision Making',principle:'釐清資訊、選項與後果能做出更理性的決策。',app:'列出至少兩個可行方案再做決定，避免情緒化倉促決策。'},
+  {cat:'D',name:'利害關係人管理 Stakeholder Management',principle:'不同關係人對同一事件的關注點不同。',app:'列出這件事牽涉的每一方，分別思考他們最在意什麼。'},
+  {cat:'D',name:'衝突管理 Conflict Management',principle:'選擇適合情境的因應策略（合作／妥協／退讓等）。',app:'依事情的重要性與關係的重要性，選擇對應的因應方式。'},
+  {cat:'E',name:'情緒智能 Emotional Intelligence',principle:'覺察並管理自己與他人情緒是有效互動的基礎。',app:'在回應前先辨識自己此刻的情緒強度，再決定怎麼說。'},
+  {cat:'E',name:'認知重評 Cognitive Reappraisal',principle:'改變對事件的解讀方式可以改變情緒反應。',app:'練習把「他在針對我」改寫成「他可能也有壓力」。'},
+  {cat:'E',name:'歸因理論 Attribution Theory',principle:'我們對行為原因的推論會影響後續反應。',app:'區分「事實」與「我對這件事的解讀」，避免過早下定論。'},
+  {cat:'E',name:'困難對話 Difficult Conversations',principle:'困難對話同時包含事實、情緒與自我認同三層。',app:'對話前先想清楚：我想傳達的事實、我的感受、這對我的意義。'},
+  {cat:'E',name:'心理安全感 Psychological Safety',principle:'人在不怕被責怪時才願意誠實溝通。',app:'先肯定對方願意提出問題，再一起討論解決方式。'},
+  {cat:'E',name:'界線管理 Boundary Management',principle:'清楚的界線能保護長期合作關係與個人能量。',app:'明確說出自己能／不能配合的範圍，而不是默默承受。'},
+];
+
+const LS_KEY = 'teacherCoachData_v1';
+
+/* ---------- 資料存取 ---------- */
+function loadData(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return {events:[]};
+}
+function saveData(){ localStorage.setItem(LS_KEY, JSON.stringify(DB)); }
+let DB = loadData();
+
+function uid(){ return 'e' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function esc(s){ const d=document.createElement('div'); d.textContent = (s==null?'':String(s)); return d.innerHTML; }
+function catInfo(id){ return CATEGORIES.find(c=>c.id===id); }
+function fmtDate(d){
+  const dt = new Date(d+'T00:00:00');
+  return (dt.getMonth()+1)+'/'+dt.getDate();
+}
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(()=>t.classList.remove('show'), 1800);
+}
+
+/* ---------- App 狀態 ---------- */
+const TC = {
+  tab: 'home',
+  flow: null, // {step, branch, draft, editingId}
+  detailId: null,
+
+  goTab(tab){ this.flow=null; this.detailId=null; this.tab=tab; render(); },
+  back(){
+    if(this.flow){
+      if(this.flow.step>=99){ this.flow.step=2; }
+      else if(this.flow.step===0){ if(!confirm('要放棄這次記錄嗎？')) return; this.flow=null; }
+      else { this.flow.step--; }
+      render(); return;
+    }
+    if(this.detailId){ this.detailId=null; render(); return; }
+  },
+
+  startNewEvent(precat){
+    this.detailId=null;
+    this.flow = {
+      step:0, branch:'normal', editingId:null,
+      draft:{
+        id:null, createdAt:todayStr(), title:'', description:'',
+        date:todayStr(), period:'上課中', location:'', people:'', behaviors:'', teacherAction:'',
+        category:{primary:precat||null, secondary:null}, level:null,
+        riskFlags:[], isHighRisk:false,
+        coachAnswers:[], theories:[],
+        solutions:{now:'',tomorrow:'',longTerm:''},
+        mental:{emotion:null,emotionScore:50,pauseConfirmed:false,fact:'',interpretation:'',resilienceSkill:null,resilienceNote:'',agency:[]},
+        reflection:'', experiment:{plan:'',metric:'',baseline:'',target:'',result:'',effective:null},
+      }
+    };
+    this.tab='home';
+    render();
+  },
+  editEvent(id){
+    const ev = DB.events.find(e=>e.id===id);
+    if(!ev) return;
+    this.detailId=null;
+    this.flow = {step:0, branch: ev.isHighRisk?'risk':'normal', editingId:id, draft: JSON.parse(JSON.stringify(ev))};
+    render();
+  },
+  viewDetail(id){ this.flow=null; this.detailId=id; render(); },
+  deleteEvent(id){
+    if(!confirm('確定要刪除這筆記錄嗎？此動作無法復原。')) return;
+    DB.events = DB.events.filter(e=>e.id!==id);
+    saveData(); this.detailId=null; this.tab='history'; render(); toast('已刪除');
+  },
+
+  nextStep(){
+    const f=this.flow, d=f.draft;
+    if(f.step===0){
+      if(!d.description.trim() && !d.title.trim()){ toast('請至少描述一下發生什麼事'); return; }
+      if(!d.title.trim()) d.title = d.description.trim().slice(0,16);
+    }
+    if(f.step===1){
+      if(!d.category.primary){ toast('請選擇問題類別'); return; }
+      if(!d.level){ toast('請選擇問題層次'); return; }
+    }
+    if(f.step===2){
+      d.isHighRisk = d.riskFlags.length>0;
+      if(d.isHighRisk){ f.branch='risk'; f.step=99; render(); return; }
+      f.branch='normal';
+    }
+    if(f.step===3 && !SOLUTION_TEMPLATES[d.category.primary]){ /* noop */ }
+    if(f.step===3){
+      const tpl = SOLUTION_TEMPLATES[d.category.primary];
+      if(tpl && !d.solutions.now && !d.solutions.tomorrow && !d.solutions.longTerm){
+        d.solutions = {...tpl};
+      }
+    }
+    f.step++;
+    render();
+  },
+  prevStep(){ this.flow.step--; render(); },
+  setCoachAnswer(i, value){ this.flow.draft.coachAnswers[i] = value; },
+
+  saveDraft(){
+    const f=this.flow, d=f.draft;
+    d.savedAt = new Date().toISOString();
+    if(f.editingId){
+      const idx = DB.events.findIndex(e=>e.id===f.editingId);
+      d.id = f.editingId;
+      DB.events[idx] = d;
+    } else {
+      d.id = uid();
+      DB.events.push(d);
+    }
+    saveData();
+    this.flow=null;
+    this.tab='home';
+    render();
+    toast('已儲存，今天累積 ' + DB.events.filter(e=>e.date===todayStr()).length + ' 筆記錄');
+  },
+
+  toggleChip(path, value, single){
+    const f=this.flow;
+    const parts = path.split('.');
+    let obj=f.draft; for(let i=0;i<parts.length-1;i++) obj=obj[parts[i]];
+    const key=parts[parts.length-1];
+    if(single){
+      obj[key] = (obj[key]===value) ? null : value;
+    } else {
+      if(!Array.isArray(obj[key])) obj[key]=[];
+      const i=obj[key].indexOf(value);
+      if(i>-1) obj[key].splice(i,1); else obj[key].push(value);
+    }
+    render();
+  },
+  setField(path, value){
+    const f=this.flow; const parts = path.split('.');
+    let obj=f.draft; for(let i=0;i<parts.length-1;i++) obj=obj[parts[i]];
+    obj[parts[parts.length-1]] = value;
+  },
+  setFieldRender(path, value){ this.setField(path,value); render(); },
+
+  reportExperiment(eventId, result, effective){
+    const ev = DB.events.find(e=>e.id===eventId);
+    if(!ev) return;
+    ev.experiment.result = result; ev.experiment.effective = effective;
+    saveData(); render(); toast('已回報實驗結果');
+  },
+
+  exportData(){
+    const blob = new Blob([JSON.stringify(DB,null,2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href=url; a.download = 'teacher-coach-backup-'+todayStr()+'.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 2000);
+  },
+  importData(file){
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      try{
+        const data = JSON.parse(reader.result);
+        if(!data || !Array.isArray(data.events)) throw new Error('格式不正確');
+        if(!confirm('匯入將會覆蓋目前手機裡的所有資料，確定嗎？')) return;
+        DB = data; saveData(); render(); toast('匯入完成');
+      }catch(e){ alert('匯入失敗：檔案格式不正確'); }
+    };
+    reader.readAsText(file);
+  },
+  clearAll(){
+    const v = prompt('這將刪除這支手機裡的所有記錄，且無法復原。輸入「刪除」以確認：');
+    if(v!=='刪除') return;
+    DB = {events:[]}; saveData(); render(); toast('資料已清除');
+  },
+};
+
+/* ---------- Mental score 計算 ---------- */
+function subScores(ev){
+  const m = ev.mental||{};
+  const selfAwareness = (m.emotion!=null) ? 100 : 0;
+  const regulation = (m.emotion==null) ? 0 : (m.emotionScore<=80 ? 100 : (m.pauseConfirmed?70:30));
+  const flexibility = (m.fact&&m.interpretation) ? 100 : ((m.fact||m.interpretation)?50:0);
+  const resilience = (m.resilienceNote&&m.resilienceNote.trim()) ? 100 : 0;
+  const agency = (m.agency&&m.agency.length) ? 100 : 0;
+  return {selfAwareness, regulation, flexibility, resilience, agency};
+}
+function compositeScore(ev){
+  if(ev.isHighRisk) return null;
+  const s = subScores(ev);
+  return Math.round((s.selfAwareness+s.regulation+s.flexibility+s.resilience+s.agency)/5);
+}
+function todayMentalScore(){
+  const todays = DB.events.filter(e=>e.date===todayStr() && !e.isHighRisk);
+  if(!todays.length) return 80;
+  const scores = todays.map(compositeScore).filter(s=>s!=null);
+  if(!scores.length) return 80;
+  return Math.round(scores.reduce((a,b)=>a+b,0)/scores.length);
+}
+
+/* ---------- Render：主入口 ---------- */
+function render(){
+  document.getElementById('backBtn').style.display = (TC.flow||TC.detailId) ? '' : 'none';
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active', !TC.flow && !TC.detailId && b.dataset.tab===TC.tab));
+  document.getElementById('tabbar').style.display = (TC.flow) ? 'none' : 'flex';
+
+  const root = document.getElementById('view-root');
+  const title = document.getElementById('topTitle');
+
+  if(TC.flow){ title.textContent = flowTitle(TC.flow); root.innerHTML = renderFlow(TC.flow); return; }
+  if(TC.detailId){ title.textContent = '事件詳情'; root.innerHTML = renderDetail(TC.detailId); return; }
+
+  title.textContent = {home:'Teacher Coach', history:'事件記錄', dashboard:'教師成長', settings:'設定'}[TC.tab];
+  if(TC.tab==='home') root.innerHTML = renderHome();
+  else if(TC.tab==='history') root.innerHTML = renderHistory();
+  else if(TC.tab==='dashboard') root.innerHTML = renderDashboard();
+  else root.innerHTML = renderSettings();
+}
+
+function flowTitle(f){
+  if(f.branch==='risk' && f.step>=99) return '風險評估';
+  return ['描述事件','問題診斷','風險檢核','教練提問','行動方案','心理素質','反思與實驗'][f.step] || '新增事件';
+}
+
+/* ---------- Home ---------- */
+function renderHome(){
+  const score = todayMentalScore();
+  const todayCount = DB.events.filter(e=>e.date===todayStr()).length;
+  const pending = DB.events.find(e=> e.experiment && e.experiment.plan && !e.experiment.result && e.date!==todayStr());
+
+  let html = '';
+  if(pending){
+    html += `<div class="card">
+      <h2>🧪 昨天的實驗，結果如何？</h2>
+      <p class="muted" style="margin-top:0">${esc(pending.experiment.plan)}</p>
+      ${pending.experiment.metric?`<p class="muted">觀察指標：${esc(pending.experiment.metric)}</p>`:''}
+      <label class="field">實際觀察結果</label>
+      <input type="text" id="expResultInput" placeholder="例如：4次" value="">
+      <div class="chip-row" style="margin-top:10px">
+        <button class="chip" onclick="TC.reportExperiment('${pending.id}', document.getElementById('expResultInput').value, 'effective')">✅ 有效</button>
+        <button class="chip" onclick="TC.reportExperiment('${pending.id}', document.getElementById('expResultInput').value, 'partial')">🟡 部分有效</button>
+        <button class="chip" onclick="TC.reportExperiment('${pending.id}', document.getElementById('expResultInput').value, 'no')">⛔ 沒有效</button>
+      </div>
+    </div>`;
+  }
+
+  html += `<div class="card">
+    <h2>今天遇到什麼問題？</h2>
+    <button class="big-btn" onclick="TC.startNewEvent()">＋ 新增事件</button>
+    <div class="quickgrid">
+      ${QUICK_ENTRIES.map(q=>`<button onclick="TC.startNewEvent('${q.cat}')"><span class="qe">${q.emoji}</span>${q.label}</button>`).join('')}
+    </div>
+  </div>`;
+
+  html += `<div class="card">
+    <h2>今日 Mental Strength</h2>
+    <div class="scorewrap">
+      <div class="scorenum">${score}</div>
+      <div class="bar-outer"><div class="bar-inner" style="width:${score}%"></div></div>
+    </div>
+    <p class="muted" style="margin-top:10px">今天你已經處理了 ${todayCount} 個事件。</p>
+  </div>`;
+
+  const recent = DB.events.slice().sort((a,b)=> (b.savedAt||'').localeCompare(a.savedAt||'')).slice(0,5);
+  if(recent.length){
+    html += `<div class="section-title">最近的記錄</div>`;
+    html += recent.map(eventRow).join('');
+  }
+  return html;
+}
+
+function eventRow(ev){
+  const c = catInfo(ev.category.primary) || {label:'未分類', color:'var(--border)', emoji:'📝'};
+  return `<div class="event-row" onclick="TC.viewDetail('${ev.id}')">
+    <div class="dot" style="background:${c.color}"></div>
+    <div class="et">
+      <div class="title">${ev.isHighRisk?'⚠️ ':''}${esc(ev.title||'未命名事件')}</div>
+      <div class="meta">${fmtDate(ev.date)} · ${esc(ev.period||'')} · ${c.emoji} ${c.label}</div>
+    </div>
+  </div>`;
+}
+
+/* ---------- History ---------- */
+function renderHistory(){
+  if(!DB.events.length) return `<div class="empty">還沒有任何記錄。<br>從「今天」開始新增第一個事件吧。</div>`;
+  const groups = {};
+  DB.events.slice().sort((a,b)=>b.date.localeCompare(a.date) || (b.savedAt||'').localeCompare(a.savedAt||'')).forEach(ev=>{
+    (groups[ev.date] = groups[ev.date]||[]).push(ev);
+  });
+  let html='';
+  Object.keys(groups).sort().reverse().forEach(date=>{
+    html += `<div class="date-sep">${date}</div>`;
+    html += groups[date].map(eventRow).join('');
+  });
+  return html;
+}
+
+/* ---------- Detail ---------- */
+function renderDetail(id){
+  const ev = DB.events.find(e=>e.id===id);
+  if(!ev) return '<div class="empty">找不到這筆記錄</div>';
+  const c = catInfo(ev.category.primary) || {label:'未分類', emoji:'📝'};
+  let html = `<div class="card">
+    <h2>${esc(ev.title)}</h2>
+    <div class="kv"><span class="k">日期／時段</span><span>${ev.date} · ${esc(ev.period)}</span></div>
+    <div class="kv"><span class="k">場所</span><span>${esc(ev.location)||'—'}</span></div>
+    <div class="kv"><span class="k">涉及人物</span><span>${esc(ev.people)||'—'}</span></div>
+    <div class="kv"><span class="k">類別</span><span>${c.emoji} ${c.label}${ev.level?(' · L'+ev.level):''}</span></div>
+    ${ev.description?`<p class="muted" style="margin-top:10px">${esc(ev.description)}</p>`:''}
+  </div>`;
+
+  if(ev.isHighRisk){
+    html += `<div class="card"><div class="banner warn">⚠️ 此事件已標記為高風險，請依學校正式程序處理。</div>
+      <p class="muted">已勾選：${ev.riskFlags.map(esc).join('、')}</p></div>`;
+  } else {
+    if(ev.solutions && (ev.solutions.now||ev.solutions.tomorrow||ev.solutions.longTerm)){
+      html += `<div class="card"><h2>行動方案</h2>
+        <p><span class="badge">NOW</span>${esc(ev.solutions.now)}</p>
+        <p><span class="badge">TOMORROW</span>${esc(ev.solutions.tomorrow)}</p>
+        <p><span class="badge">LONG TERM</span>${esc(ev.solutions.longTerm)}</p>
+      </div>`;
+    }
+    if(ev.mental && ev.mental.emotion){
+      const em = EMOTIONS.find(e=>e.id===ev.mental.emotion);
+      html += `<div class="card"><h2>心理素質紀錄</h2>
+        <div class="kv"><span class="k">情緒</span><span>${em?em.emoji+' '+em.label:'—'}（強度 ${ev.mental.emotionScore}）</span></div>
+        ${ev.mental.fact?`<div class="kv"><span class="k">事實</span><span>${esc(ev.mental.fact)}</span></div>`:''}
+        ${ev.mental.interpretation?`<div class="kv"><span class="k">解讀</span><span>${esc(ev.mental.interpretation)}</span></div>`:''}
+        ${ev.mental.resilienceSkill?`<div class="kv"><span class="k">訓練了</span><span>${esc(ev.mental.resilienceSkill)}</span></div>`:''}
+        ${ev.mental.agency&&ev.mental.agency.length?`<div class="kv"><span class="k">我能控制</span><span>${ev.mental.agency.map(esc).join('、')}</span></div>`:''}
+      </div>`;
+    }
+  }
+  if(ev.reflection){
+    html += `<div class="card"><h2>反思</h2><p class="muted">${esc(ev.reflection)}</p></div>`;
+  }
+  if(ev.experiment && ev.experiment.plan){
+    html += `<div class="card"><h2>教師實驗</h2>
+      <p>${esc(ev.experiment.plan)}</p>
+      ${ev.experiment.result?`<div class="kv"><span class="k">結果</span><span>${esc(ev.experiment.result)}（${{effective:'✅ 有效',partial:'🟡 部分有效',no:'⛔ 沒有效'}[ev.experiment.effective]||'尚未評估'}）</span></div>`:'<p class="muted">尚未回報結果</p>'}
+    </div>`;
+  }
+  html += `<div class="footer-nav">
+    <button class="ghost-btn" onclick="TC.editEvent('${ev.id}')">編輯</button>
+    <button class="ghost-btn danger-btn" onclick="TC.deleteEvent('${ev.id}')">刪除</button>
+  </div>`;
+  return html;
+}
+
+/* ---------- Flow renderer ---------- */
+function renderFlow(f){
+  if(f.branch==='risk' && f.step>=99) return renderRiskEnd(f);
+  const steps = ['input','diagnosis','risk','coach','solution','mental','reflect'];
+  const dots = steps.map((s,i)=>`<span class="${i===f.step?'on':''}"></span>`).join('');
+  const body = [renderStepInput, renderStepDiagnosis, renderStepRisk, renderStepCoach, renderStepSolution, renderStepMental, renderStepReflect][f.step](f.draft);
+  return `<div class="progress-dots">${dots}</div>${body}`;
+}
+
+function renderStepInput(d){
+  return `<div class="card">
+    <label class="field">今天發生什麼事？用自己的話描述</label>
+    <textarea oninput="TC.setField('description', this.value)" placeholder="例如：午休有兩個學生吵架，其中一個把另一個的東西丟掉。">${esc(d.description)}</textarea>
+    <label class="field">事件名稱（可留白，會自動帶入）</label>
+    <input type="text" value="${esc(d.title)}" oninput="TC.setField('title', this.value)" placeholder="午休同儕衝突">
+    <label class="field">日期／時段</label>
+    <div style="display:flex; gap:8px">
+      <input type="date" value="${d.date}" style="flex:1" onchange="TC.setField('date', this.value)">
+      <select style="flex:1" onchange="TC.setField('period', this.value)">
+        ${PERIODS.map(p=>`<option ${p===d.period?'selected':''}>${p}</option>`).join('')}
+      </select>
+    </div>
+    <label class="field">場所</label>
+    <input type="text" value="${esc(d.location)}" oninput="TC.setField('location', this.value)" placeholder="教室／操場／走廊">
+    <label class="field">涉及人物</label>
+    <input type="text" value="${esc(d.people)}" oninput="TC.setField('people', this.value)" placeholder="學生A、學生B">
+    <label class="field">可觀察行為（具體動作，不做評價）</label>
+    <textarea oninput="TC.setField('behaviors', this.value)" placeholder="爭吵、互相指責、丟物品">${esc(d.behaviors)}</textarea>
+    <label class="field">你目前的處置</label>
+    <textarea oninput="TC.setField('teacherAction', this.value)" placeholder="尚未處理">${esc(d.teacherAction)}</textarea>
+  </div>
+  <div class="footer-nav"><button class="big-btn" onclick="TC.nextStep()">下一步</button></div>`;
+}
+
+function renderStepDiagnosis(d){
+  return `<div class="card">
+    <h2>問題分類（Primary）</h2>
+    <div class="chip-row">${CATEGORIES.map(c=>`<button class="chip ${d.category.primary===c.id?'selected':''}" onclick="TC.toggleChip('category.primary','${c.id}',true)">${c.emoji} ${c.label}</button>`).join('')}</div>
+    <h2 style="margin-top:18px">次要類別（可選）</h2>
+    <div class="chip-row">${CATEGORIES.map(c=>`<button class="chip ${d.category.secondary===c.id?'selected':''}" onclick="TC.toggleChip('category.secondary','${c.id}',true)">${c.emoji} ${c.label}</button>`).join('')}</div>
+  </div>
+  <div class="card">
+    <h2>問題層次</h2>
+    ${LEVELS.map(l=>`<div class="chip" style="display:block; width:100%; text-align:left; margin-bottom:8px; ${d.level===l.id?'background:var(--accent);color:#fff;border-color:var(--accent)':''}" onclick="TC.toggleChip('level',${l.id},true)">
+      <b>${l.label}</b><div class="hint" style="${d.level===l.id?'color:#fff;opacity:.85':''}">${l.desc}</div>
+    </div>`).join('')}
+  </div>
+  <div class="footer-nav">
+    <button class="ghost-btn" onclick="TC.prevStep()">上一步</button>
+    <button class="big-btn" onclick="TC.nextStep()">下一步</button>
+  </div>`;
+}
+
+function renderStepRisk(d){
+  return `<div class="card">
+    <h2>風險檢核</h2>
+    <p class="muted">請誠實勾選：這個事件是否符合以下任何一項？</p>
+    ${RISK_ITEMS.map(item=>`<label style="display:flex; align-items:flex-start; gap:8px; margin-bottom:10px; font-size:13.5px;">
+      <input type="checkbox" style="width:auto; margin-top:3px;" ${d.riskFlags.includes(item)?'checked':''} onchange="TC.toggleChip('riskFlags','${item.replace(/'/g,"&#39;")}')"> <span>${item}</span>
+    </label>`).join('')}
+  </div>
+  <div class="footer-nav">
+    <button class="ghost-btn" onclick="TC.prevStep()">上一步</button>
+    <button class="big-btn" onclick="TC.nextStep()">下一步</button>
+  </div>`;
+}
+
+function renderRiskEnd(f){
+  const d=f.draft;
+  return `<div class="card">
+    <div class="banner warn">⚠️ 這個事件可能涉及正式程序。<br><br>
+    請依學校／教育局通報機制處理，並知會行政主管與輔導室。本 App 僅供教師自我反思與成長紀錄，<b>不能取代正式通報與專業協助</b>。</div>
+    <p class="muted">已勾選：${d.riskFlags.map(esc).join('、')}</p>
+  </div>
+  <div class="card">
+    <label class="field">目前的處理與感受（簡短記錄即可）</label>
+    <textarea oninput="TC.setField('reflection', this.value)" placeholder="我做了什麼、通報了誰、我現在的感受">${esc(d.reflection)}</textarea>
+  </div>
+  <div class="footer-nav">
+    <button class="ghost-btn" onclick="TC.prevStep()">上一步</button>
+    <button class="big-btn" onclick="TC.saveDraft()">儲存並結束</button>
+  </div>`;
+}
+
+function renderStepCoach(d){
+  const qs = COACH_QUESTIONS[d.category.primary] || [];
+  const theories = THEORY_LIBRARY.filter(t=>t.cat === catInfo(d.category.primary).theoryCat).slice(0,3);
+  if(!d.coachAnswers.length) d.coachAnswers = qs.map(()=> '');
+  return `<div class="card">
+    <h2>教練提問</h2>
+    <p class="muted">先回答這些問題，能幫助你看清楚問題的本質，而不只是處理表面行為。</p>
+    ${qs.map((q,i)=>`<div class="qa"><p class="q">${i+1}. ${q}</p><textarea oninput="TC.setCoachAnswer(${i}, this.value)" placeholder="簡短記下你的想法…">${esc(d.coachAnswers[i]||'')}</textarea></div>`).join('')}
+  </div>
+  <div class="card">
+    <h2>相關教育理論</h2>
+    ${theories.map(t=>`<div class="theory-card"><span class="tag">${t.name}</span>
+      <p><b>原則：</b>${t.principle}</p><p><b>應用：</b>${t.app}</p></div>`).join('')}
+  </div>
+  <div class="footer-nav">
+    <button class="ghost-btn" onclick="TC.prevStep()">上一步</button>
+    <button class="big-btn" onclick="TC.nextStep()">下一步</button>
+  </div>`;
+}
+
+function renderStepSolution(d){
+  return `<div class="card">
+    <h2>🟢 NOW｜現在怎麼辦？</h2>
+    <textarea oninput="TC.setField('solutions.now', this.value)">${esc(d.solutions.now)}</textarea>
+  </div>
+  <div class="card">
+    <h2>🟡 TOMORROW｜明天怎麼做？</h2>
+    <textarea oninput="TC.setField('solutions.tomorrow', this.value)">${esc(d.solutions.tomorrow)}</textarea>
+  </div>
+  <div class="card">
+    <h2>🔵 LONG TERM｜長期怎麼預防？</h2>
+    <textarea oninput="TC.setField('solutions.longTerm', this.value)">${esc(d.solutions.longTerm)}</textarea>
+  </div>
+  <div class="footer-nav">
+    <button class="ghost-btn" onclick="TC.prevStep()">上一步</button>
+    <button class="big-btn" onclick="TC.nextStep()">下一步</button>
+  </div>`;
+}
+
+function renderStepMental(d){
+  const m = d.mental;
+  const showPause = m.emotion && m.emotionScore>80;
+  return `<div class="card">
+    <h2>① Self-Awareness．我現在有什麼情緒？</h2>
+    <div class="emoji-row">
+      ${EMOTIONS.map(e=>`<button class="emoji-btn ${m.emotion===e.id?'selected':''}" onclick="TC.toggleChip('mental.emotion','${e.id}',true)"><span class="em">${e.emoji}</span>${e.label}</button>`).join('')}
+    </div>
+    <label class="field">強度：<span id="emScoreVal">${m.emotionScore}</span></label>
+    <input type="range" min="0" max="100" value="${m.emotionScore}"
+      oninput="TC.setField('mental.emotionScore', +this.value); document.getElementById('emScoreVal').textContent=this.value"
+      onchange="render()">
+  </div>
+  ${showPause ? `<div class="card">
+    <div class="banner warn">情緒強度偏高，建議先暫停處理核心衝突。<br><br><b>STOP → BREATHE → OBSERVE → CHOOSE</b></div>
+    <label style="display:flex; gap:8px; align-items:center; font-size:13.5px;">
+      <input type="checkbox" style="width:auto" ${m.pauseConfirmed?'checked':''} onchange="TC.setFieldRender('mental.pauseConfirmed', this.checked)"> 我已經完成暫停／呼吸，準備繼續
+    </label>
+  </div>` : ''}
+  <div class="card">
+    <h2>③ Cognitive Flexibility．事實 vs 解讀</h2>
+    <label class="field">Fact．發生的事實</label>
+    <textarea oninput="TC.setField('mental.fact', this.value)" placeholder="他今天三次沒有遵守規則">${esc(m.fact)}</textarea>
+    <label class="field">Interpretation．我的解讀</label>
+    <textarea oninput="TC.setField('mental.interpretation', this.value)" placeholder="他可能是在挑戰我的權威">${esc(m.interpretation)}</textarea>
+  </div>
+  <div class="card">
+    <h2>④ Resilience．這次訓練了我哪一項能力？</h2>
+    <div class="chip-row">${RESILIENCE_SKILLS.map(s=>`<button class="chip ${m.resilienceSkill===s?'selected':''}" onclick="TC.toggleChip('mental.resilienceSkill','${s}',true)">${s}</button>`).join('')}</div>
+    <label class="field">簡短寫下這次帶給你的收穫</label>
+    <textarea oninput="TC.setField('mental.resilienceNote', this.value)" placeholder="今天不是一次失敗，而是一次班級經營能力訓練。">${esc(m.resilienceNote)}</textarea>
+  </div>
+  <div class="card">
+    <h2>⑤ Agency．明天你能控制的事情是什麼？</h2>
+    <div class="chip-row">${AGENCY_OPTIONS.map(a=>`<button class="chip ${m.agency.includes(a)?'selected':''}" onclick="TC.toggleChip('mental.agency','${a}')">${a}</button>`).join('')}</div>
+  </div>
+  <div class="footer-nav">
+    <button class="ghost-btn" onclick="TC.prevStep()">上一步</button>
+    <button class="big-btn" onclick="TC.nextStep()">下一步</button>
+  </div>`;
+}
+
+function renderStepReflect(d){
+  return `<div class="card">
+    <h2>反思</h2>
+    <label class="field">這次事件，我學到了什麼？</label>
+    <textarea oninput="TC.setField('reflection', this.value)">${esc(d.reflection)}</textarea>
+  </div>
+  <div class="card">
+    <h2>🧪 明天的教師實驗</h2>
+    <p class="muted">不要一次改變十件事，明天只實驗一件事。</p>
+    <label class="field">明天要實驗的行動</label>
+    <textarea oninput="TC.setField('experiment.plan', this.value)" placeholder="上課開始前，用30秒明確說明討論音量。">${esc(d.experiment.plan)}</textarea>
+    <label class="field">觀察指標</label>
+    <input type="text" value="${esc(d.experiment.metric)}" oninput="TC.setField('experiment.metric', this.value)" placeholder="30分鐘內提醒次數">
+  </div>
+  <div class="footer-nav">
+    <button class="ghost-btn" onclick="TC.prevStep()">上一步</button>
+    <button class="big-btn" onclick="TC.saveDraft()">完成並儲存</button>
+  </div>`;
+}
+
+/* ---------- Dashboard ---------- */
+function radarSVG(labels, values, size){
+  size = size||220;
+  const cx=size/2, cy=size/2, R=size/2-30, n=labels.length;
+  const pt = (i,r)=>{ const a = -Math.PI/2 + i*2*Math.PI/n; return [cx+r*Math.cos(a), cy+r*Math.sin(a)]; };
+  let grid='';
+  [0.25,0.5,0.75,1].forEach(f=>{
+    const pts = labels.map((_,i)=>pt(i,R*f).join(',')).join(' ');
+    grid += `<polygon points="${pts}" fill="none" stroke="var(--border)" stroke-width="1"/>`;
+  });
+  labels.forEach((_,i)=>{ const [x,y]=pt(i,R); grid += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="var(--border)" stroke-width="1"/>`; });
+  const dataPts = values.map((v,i)=>pt(i, R*Math.max(0,Math.min(100,v))/100).join(',')).join(' ');
+  const labelEls = labels.map((l,i)=>{ const [x,y]=pt(i,R+18); return `<text x="${x}" y="${y}" font-size="10.5" fill="var(--muted)" text-anchor="middle" dominant-baseline="middle">${l}</text>`; }).join('');
+  return `<svg viewBox="0 0 ${size} ${size}" style="width:100%; max-width:280px; display:block; margin:0 auto;">
+    ${grid}
+    <polygon points="${dataPts}" fill="rgba(79,124,255,0.35)" stroke="var(--accent)" stroke-width="2"/>
+    ${labelEls}
+  </svg>`;
+}
+
+function renderDashboard(){
+  const events = DB.events;
+  if(!events.length) return `<div class="empty">還沒有資料可以分析。<br>先記錄幾個事件吧。</div>`;
+
+  const counts = {}; CATEGORIES.forEach(c=>counts[c.id]=0);
+  events.forEach(e=>{ if(counts[e.category.primary]!=null) counts[e.category.primary]++; });
+  const maxCount = Math.max(1,...Object.values(counts));
+
+  const normalEvents = events.filter(e=>!e.isHighRisk && e.mental);
+  const skillLabels = ['自我覺察','情緒調節','認知彈性','復原力','主動性'];
+  let avg = {selfAwareness:0,regulation:0,flexibility:0,resilience:0,agency:0};
+  if(normalEvents.length){
+    normalEvents.forEach(e=>{ const s=subScores(e); Object.keys(avg).forEach(k=>avg[k]+=s[k]); });
+    Object.keys(avg).forEach(k=>avg[k]=Math.round(avg[k]/normalEvents.length));
+  }
+
+  const byWeek = {};
+  events.forEach(e=>{
+    const dt = new Date(e.date+'T00:00:00');
+    const jan1 = new Date(dt.getFullYear(),0,1);
+    const week = Math.ceil((((dt-jan1)/86400000)+jan1.getDay()+1)/7);
+    const key = dt.getFullYear()+'-W'+week;
+    (byWeek[key]=byWeek[key]||[]).push(e);
+  });
+  const weekKeys = Object.keys(byWeek).sort();
+
+  let html = `<div class="card">
+    <h2>問題類型分佈</h2>
+    <div class="bars">
+    ${CATEGORIES.map(c=>`<div class="bar-item"><div class="lbl"><span>${c.emoji} ${c.label}</span><span>${counts[c.id]}</span></div>
+      <div class="bar-outer"><div class="bar-inner" style="width:${counts[c.id]/maxCount*100}%; background:${c.color}"></div></div></div>`).join('')}
+    </div>
+  </div>`;
+
+  html += `<div class="card">
+    <h2>Mental Strength 五角圖</h2>
+    ${normalEvents.length ? radarSVG(skillLabels,[avg.selfAwareness,avg.regulation,avg.flexibility,avg.resilience,avg.agency]) : '<p class="muted">尚無足夠資料</p>'}
+  </div>`;
+
+  html += `<div class="card">
+    <h2>成長曲線（依週）</h2>
+    ${weekKeys.map(k=>{
+      const evs = byWeek[k];
+      const scored = evs.map(compositeScore).filter(s=>s!=null);
+      const avgS = scored.length ? Math.round(scored.reduce((a,b)=>a+b,0)/scored.length) : null;
+      return `<div class="bar-item"><div class="lbl"><span>${k}．${evs.length} 個事件</span><span>${avgS!=null?avgS+'/100':'—'}</span></div>
+        <div class="bar-outer"><div class="bar-inner" style="width:${avgS||0}%"></div></div></div>`;
+    }).join('') || '<p class="muted">尚無資料</p>'}
+  </div>`;
+
+  return html;
+}
+
+/* ---------- Settings ---------- */
+function renderSettings(){
+  return `<div class="card">
+    <h2>資料與隱私</h2>
+    <p class="muted">所有資料只儲存在這支手機（瀏覽器）的本機空間裡。GitHub 只提供這個網頁程式本身，不會蒐集、上傳或儲存你的任何事件內容。刪除瀏覽器資料或換手機，記錄就不會存在，請定期備份。</p>
+  </div>
+  <div class="card">
+    <h2>備份與還原</h2>
+    <button class="ghost-btn" onclick="TC.exportData()">⬇️ 匯出備份（JSON）</button>
+    <div style="height:10px"></div>
+    <label class="ghost-btn" style="display:block; text-align:center; cursor:pointer;">
+      ⬆️ 匯入備份（JSON）
+      <input type="file" accept="application/json" style="display:none" onchange="if(this.files[0]) TC.importData(this.files[0])">
+    </label>
+  </div>
+  <div class="card">
+    <h2>危險區域</h2>
+    <button class="ghost-btn danger-btn" onclick="TC.clearAll()">清除所有資料</button>
+  </div>
+  <div class="card">
+    <h2>關於</h2>
+    <p class="muted">Teacher Coach v1.0（單機版）<br>不只是解決問題，而是訓練自己成為更好的老師。<br><br>本 App 為教師自我反思與成長紀錄工具，遇到安全疑慮或高風險事件時，請務必依學校正式程序處理，不能取代專業協助。</p>
+  </div>`;
+}
+
+render();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
+}
+</script>
+</body>
+</html>
