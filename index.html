@@ -1027,12 +1027,13 @@ function renderSettings(){
     </select>
     ${ai.provider ? `
       <label class="field">${AI_PROVIDERS[ai.provider].label} API Key</label>
-      <input type="password" value="${esc(ai.keys[ai.provider])}" placeholder="${AI_PROVIDERS[ai.provider].keyHint}" oninput="TC.setAIKey('${ai.provider}', this.value)" autocomplete="off">
+      <input type="password" value="${esc(ai.keys[ai.provider])}" placeholder="${AI_PROVIDERS[ai.provider].keyHint}" oninput="TC.setAIKey('${ai.provider}', this.value)" autocomplete="off" spellcheck="false" autocapitalize="off">
+      <p class="hint">格式範例：${AI_PROVIDERS[ai.provider].keyHint}（輸入後畫面上會以圓點遮住，這是正常的）</p>
       <label class="field">模型（可自行修改）</label>
       <input type="text" value="${esc(ai.models[ai.provider])}" oninput="TC.setAIModel('${ai.provider}', this.value)">
       <div style="height:10px"></div>
       <button class="ghost-btn" onclick="TC.testAIConnection()">🔌 測試連線</button>
-    ` : ''}
+    ` : `<p class="hint">👆 在上面選一個服務，下面就會出現 API Key 輸入欄。</p>`}
   </div>
   <div class="card">
     <h2>資料與隱私</h2>
