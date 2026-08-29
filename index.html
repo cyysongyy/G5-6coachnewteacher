@@ -12,7 +12,7 @@
 :root{
   --bg:#f5f6f8; --card:#ffffff; --text:#1c1c1e; --muted:#6b6b70; --border:#e5e5ea;
   --accent:#4f7cff; --accent-ink:#ffffff; --danger:#e5484d; --warn:#b8770a; --warn-bg:#fff4e0;
-  --good:#1f9254; --good-bg:#e8f7ee; --radius:16px; --gap:12px;
+  --good:#1f9254; --good-bg:#e8f7ee; --radius:16px; --gap:12px; --fs:1;
   --c-student:#ff6b6b; --c-classroom:#4f7cff; --c-teaching:#0fa3a3; --c-admin:#8451e0; --c-people:#e08e00;
 }
 @media (prefers-color-scheme: dark){
@@ -31,86 +31,86 @@ body{
   position:sticky; top:0; z-index:10; background:var(--bg); padding:calc(14px + env(safe-area-inset-top)) 16px 10px;
   display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border);
 }
-#topbar h1{ font-size:17px; margin:0; flex:1; }
+#topbar h1{ font-size:calc(17px * var(--fs)); margin:0; flex:1; }
 .iconbtn{
   border:none; background:var(--card); color:var(--text); border-radius:12px; width:36px; height:36px;
-  font-size:18px; display:flex; align-items:center; justify-content:center; cursor:pointer; border:1px solid var(--border);
+  font-size:calc(18px * var(--fs)); display:flex; align-items:center; justify-content:center; cursor:pointer; border:1px solid var(--border);
 }
 #view-root{ flex:1; padding:16px; padding-bottom:32px; }
 #tabbar{
   position:fixed; bottom:0; left:0; right:0; background:var(--card); border-top:1px solid var(--border);
   display:flex; padding-bottom:env(safe-area-inset-bottom); max-width:560px; margin:0 auto;
 }
-.tab{ flex:1; background:none; border:none; padding:8px 4px 10px; color:var(--muted); font-size:11px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:2px;}
+.tab{ flex:1; background:none; border:none; padding:8px 4px 10px; color:var(--muted); font-size:calc(11px * var(--fs)); cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:2px;}
 .tab.active{ color:var(--accent); font-weight:600; }
-.tab .ti{ font-size:20px; }
+.tab .ti{ font-size:calc(20px * var(--fs)); }
 
 .card{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:var(--gap); }
-.card h2{ font-size:15px; margin:0 0 10px; }
-.muted{ color:var(--muted); font-size:13px; }
+.card h2{ font-size:calc(15px * var(--fs)); margin:0 0 10px; }
+.muted{ color:var(--muted); font-size:calc(13px * var(--fs)); }
 .big-btn{
   width:100%; padding:16px; border-radius:var(--radius); border:none; background:var(--accent); color:var(--accent-ink);
-  font-size:16px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;
+  font-size:calc(16px * var(--fs)); font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;
 }
-.ghost-btn{ width:100%; padding:13px; border-radius:12px; border:1px solid var(--border); background:var(--card); color:var(--text); font-size:14px; font-weight:600; cursor:pointer; }
+.ghost-btn{ width:100%; padding:13px; border-radius:12px; border:1px solid var(--border); background:var(--card); color:var(--text); font-size:calc(14px * var(--fs)); font-weight:600; cursor:pointer; }
 .danger-btn{ background:var(--danger); color:#fff; border:none; }
 .quickgrid{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:14px 0; }
-.quickgrid button{ background:var(--card); border:1px solid var(--border); border-radius:14px; padding:12px 4px; font-size:12px; cursor:pointer; color:var(--text); }
-.quickgrid .qe{ font-size:22px; display:block; margin-bottom:4px; }
+.quickgrid button{ background:var(--card); border:1px solid var(--border); border-radius:14px; padding:12px 4px; font-size:calc(12px * var(--fs)); cursor:pointer; color:var(--text); }
+.quickgrid .qe{ font-size:calc(22px * var(--fs)); display:block; margin-bottom:4px; }
 .scorewrap{ display:flex; align-items:center; gap:14px; }
-.scorenum{ font-size:32px; font-weight:800; }
+.scorenum{ font-size:calc(32px * var(--fs)); font-weight:800; }
 .bar-outer{ background:var(--border); border-radius:8px; height:10px; overflow:hidden; flex:1; }
 .bar-inner{ height:100%; background:var(--accent); border-radius:8px; }
 .chip-row{ display:flex; flex-wrap:wrap; gap:8px; }
-.chip{ padding:9px 14px; border-radius:999px; border:1px solid var(--border); background:var(--card); font-size:13px; cursor:pointer; color:var(--text); }
+.chip{ padding:9px 14px; border-radius:999px; border:1px solid var(--border); background:var(--card); font-size:calc(13px * var(--fs)); cursor:pointer; color:var(--text); }
 .chip.selected{ background:var(--accent); color:#fff; border-color:var(--accent); }
-label.field{ display:block; font-size:13px; font-weight:600; margin:14px 0 6px; }
+label.field{ display:block; font-size:calc(13px * var(--fs)); font-weight:600; margin:14px 0 6px; }
 label.field:first-child{ margin-top:0; }
 input[type=text],input[type=number],input[type=date],textarea,select{
-  width:100%; padding:11px 12px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text); font-size:15px; font-family:inherit;
+  width:100%; padding:11px 12px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text); font-size:calc(15px * var(--fs)); font-family:inherit;
 }
 textarea{ min-height:70px; resize:vertical; }
-.hint{ font-size:12px; color:var(--muted); margin-top:4px; }
-.banner{ border-radius:12px; padding:12px 14px; font-size:13px; margin-bottom:12px; line-height:1.6; }
+.hint{ font-size:calc(12px * var(--fs)); color:var(--muted); margin-top:4px; }
+.banner{ border-radius:12px; padding:12px 14px; font-size:calc(13px * var(--fs)); margin-bottom:12px; line-height:1.6; }
 .banner.warn{ background:var(--warn-bg); color:var(--warn); }
 .banner.good{ background:var(--good-bg); color:var(--good); }
 .progress-dots{ display:flex; gap:5px; justify-content:center; margin-bottom:14px; }
 .progress-dots span{ width:7px; height:7px; border-radius:50%; background:var(--border); }
 .progress-dots span.on{ background:var(--accent); }
-.steplabel{ text-align:center; font-size:12px; color:var(--muted); margin-bottom:10px; }
+.steplabel{ text-align:center; font-size:calc(12px * var(--fs)); color:var(--muted); margin-bottom:10px; }
 .footer-nav{ display:flex; gap:10px; margin-top:18px; }
 .footer-nav .big-btn, .footer-nav .ghost-btn{ flex:1; }
 .theory-card{ border:1px solid var(--border); border-radius:12px; padding:12px; margin-bottom:8px; }
-.theory-card h3{ margin:0 0 4px; font-size:14px; }
-.theory-card .tag{ font-size:11px; color:var(--accent); font-weight:700; }
-.theory-card p{ margin:4px 0 0; font-size:12.5px; color:var(--muted); line-height:1.5; }
+.theory-card h3{ margin:0 0 4px; font-size:calc(14px * var(--fs)); }
+.theory-card .tag{ font-size:calc(11px * var(--fs)); color:var(--accent); font-weight:700; }
+.theory-card p{ margin:4px 0 0; font-size:calc(12.5px * var(--fs)); color:var(--muted); line-height:1.5; }
 .qa{ margin-bottom:10px; }
-.qa p.q{ font-size:13.5px; font-weight:600; margin:0 0 6px; }
+.qa p.q{ font-size:calc(13.5px * var(--fs)); font-weight:600; margin:0 0 6px; }
 .event-row{ display:flex; align-items:center; gap:10px; padding:12px; background:var(--card); border:1px solid var(--border); border-radius:12px; margin-bottom:8px; cursor:pointer; }
 .event-row .dot{ width:10px; height:10px; border-radius:50%; flex-shrink:0; }
 .event-row .et{ flex:1; min-width:0; }
-.event-row .et .title{ font-size:14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.event-row .et .meta{ font-size:12px; color:var(--muted); }
-.date-sep{ font-size:12px; color:var(--muted); margin:16px 0 8px; font-weight:600; }
+.event-row .et .title{ font-size:calc(14px * var(--fs)); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.event-row .et .meta{ font-size:calc(12px * var(--fs)); color:var(--muted); }
+.date-sep{ font-size:calc(12px * var(--fs)); color:var(--muted); margin:16px 0 8px; font-weight:600; }
 .emoji-row{ display:flex; gap:8px; flex-wrap:wrap; }
-.emoji-btn{ display:flex; flex-direction:column; align-items:center; gap:2px; border:1px solid var(--border); background:var(--card); border-radius:12px; padding:10px 12px; cursor:pointer; font-size:11px; color:var(--text); }
-.emoji-btn .em{ font-size:22px; }
+.emoji-btn{ display:flex; flex-direction:column; align-items:center; gap:2px; border:1px solid var(--border); background:var(--card); border-radius:12px; padding:10px 12px; cursor:pointer; font-size:calc(11px * var(--fs)); color:var(--text); }
+.emoji-btn .em{ font-size:calc(22px * var(--fs)); }
 .emoji-btn.selected{ border-color:var(--accent); background:var(--accent); color:#fff; }
 input[type=range]{ width:100%; }
-.kv{ display:flex; justify-content:space-between; font-size:13px; padding:6px 0; border-bottom:1px solid var(--border); }
+.kv{ display:flex; justify-content:space-between; font-size:calc(13px * var(--fs)); padding:6px 0; border-bottom:1px solid var(--border); }
 .kv:last-child{ border-bottom:none; }
 .kv .k{ color:var(--muted); }
 .bars{ display:flex; flex-direction:column; gap:10px; }
-.bar-item .lbl{ display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:4px; }
-.section-title{ font-size:13px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; margin:20px 0 8px; }
+.bar-item .lbl{ display:flex; justify-content:space-between; font-size:calc(12.5px * var(--fs)); margin-bottom:4px; }
+.section-title{ font-size:calc(13px * var(--fs)); font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; margin:20px 0 8px; }
 .toast{
   position:fixed; bottom:calc(76px + env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%);
-  background:#1c1c1e; color:#fff; padding:10px 18px; border-radius:999px; font-size:13px; z-index:50; opacity:0; pointer-events:none; transition:opacity .2s;
+  background:#1c1c1e; color:#fff; padding:10px 18px; border-radius:999px; font-size:calc(13px * var(--fs)); z-index:50; opacity:0; pointer-events:none; transition:opacity .2s;
 }
 .toast.show{ opacity:1; }
-.empty{ text-align:center; color:var(--muted); font-size:13px; padding:40px 10px; }
+.empty{ text-align:center; color:var(--muted); font-size:calc(13px * var(--fs)); padding:40px 10px; }
 .pill-select{ display:flex; gap:8px; flex-wrap:wrap; }
-.badge{ display:inline-block; font-size:11px; padding:2px 8px; border-radius:999px; background:var(--border); color:var(--text); margin-right:4px; }
+.badge{ display:inline-block; font-size:calc(11px * var(--fs)); padding:2px 8px; border-radius:999px; background:var(--border); color:var(--text); margin-right:4px; }
 a.linklike{ color:var(--accent); text-decoration:none; font-weight:600; }
 </style>
 </head>
@@ -275,7 +275,7 @@ const AI_QNA_SYSTEM_PROMPT = `你是一位資深國小高年級導師、教學�
 遇到明顯涉及人身安全、法律責任、或需要正式通報的狀況，請提醒教師依學校正式程序處理、諮詢輔導室或行政主管，不要只給操作建議。
 請一律用繁體中文回覆，語氣專業、溫暖、簡潔，避免空泛的鼓勵語，也不要用「我不是專業人士」這類免責聲明開頭。`;
 
-const APP_BUILD = 'v1.5 · 2026-08-29 03:20 UTC';
+const APP_BUILD = 'v1.6 · 2026-08-29 03:25 UTC';
 
 const LS_KEY = 'teacherCoachData_v1';
 
@@ -285,7 +285,7 @@ function defaultSettings(){
     provider: '',
     keys: {openai:'', gemini:'', claude:''},
     models: {openai:AI_PROVIDERS.openai.defaultModel, gemini:AI_PROVIDERS.gemini.defaultModel, claude:AI_PROVIDERS.claude.defaultModel},
-  }};
+  }, fontScale: 1 };
 }
 function ensureSettings(){
   const d = defaultSettings();
@@ -295,7 +295,11 @@ function ensureSettings(){
     keys: Object.assign({}, d.ai.keys, ai.keys||{}),
     models: Object.assign({}, d.ai.models, ai.models||{}),
   });
+  if(typeof DB.settings.fontScale !== 'number') DB.settings.fontScale = d.fontScale;
   if(!Array.isArray(DB.qna)) DB.qna = [];
+}
+function applyFontScale(){
+  document.documentElement.style.setProperty('--fs', DB.settings.fontScale);
 }
 function loadData(){
   try{
@@ -307,6 +311,7 @@ function loadData(){
 function saveData(){ localStorage.setItem(LS_KEY, JSON.stringify(DB)); }
 let DB = loadData();
 ensureSettings();
+applyFontScale();
 
 async function callAI(systemPrompt, userPrompt, history){
   history = history || [];
@@ -525,7 +530,7 @@ const TC = {
         const data = JSON.parse(reader.result);
         if(!data || !Array.isArray(data.events)) throw new Error('格式不正確');
         if(!confirm('匯入將會覆蓋目前手機裡的所有資料，確定嗎？')) return;
-        DB = data; ensureSettings(); saveData(); render(); toast('匯入完成');
+        DB = data; ensureSettings(); applyFontScale(); saveData(); render(); toast('匯入完成');
       }catch(e){ alert('匯入失敗：檔案格式不正確'); }
     };
     reader.readAsText(file);
@@ -533,12 +538,13 @@ const TC = {
   clearAll(){
     const v = prompt('這將刪除這支手機裡的所有記錄，且無法復原。輸入「刪除」以確認：');
     if(v!=='刪除') return;
-    DB = {events:[]}; ensureSettings(); saveData(); render(); toast('資料已清除');
+    DB = {events:[]}; ensureSettings(); applyFontScale(); saveData(); render(); toast('資料已清除');
   },
 
   setAIProvider(provider){ DB.settings.ai.provider = provider; saveData(); render(); },
   setAIKey(provider, value){ DB.settings.ai.keys[provider] = value; saveData(); },
   setAIModel(provider, value){ DB.settings.ai.models[provider] = value; saveData(); },
+  setFontScale(value){ DB.settings.fontScale = value; saveData(); applyFontScale(); render(); },
   async testAIConnection(){
     const provider = DB.settings.ai.provider;
     if(!provider){ toast('請先選擇 AI 服務'); return; }
@@ -847,7 +853,7 @@ function renderStepRisk(d){
   return `<div class="card">
     <h2>風險檢核</h2>
     <p class="muted">請誠實勾選：這個事件是否符合以下任何一項？</p>
-    ${RISK_ITEMS.map(item=>`<label style="display:flex; align-items:flex-start; gap:8px; margin-bottom:10px; font-size:13.5px;">
+    ${RISK_ITEMS.map(item=>`<label style="display:flex; align-items:flex-start; gap:8px; margin-bottom:10px; font-size:calc(13.5px * var(--fs));">
       <input type="checkbox" style="width:auto; margin-top:3px;" ${d.riskFlags.includes(item)?'checked':''} onchange="TC.toggleChip('riskFlags','${item.replace(/'/g,"&#39;")}')"> <span>${item}</span>
     </label>`).join('')}
   </div>
@@ -938,7 +944,7 @@ function renderStepMental(d){
   </div>
   ${showPause ? `<div class="card">
     <div class="banner warn">情緒強度偏高，建議先暫停處理核心衝突。<br><br><b>STOP → BREATHE → OBSERVE → CHOOSE</b></div>
-    <label style="display:flex; gap:8px; align-items:center; font-size:13.5px;">
+    <label style="display:flex; gap:8px; align-items:center; font-size:calc(13.5px * var(--fs));">
       <input type="checkbox" style="width:auto" ${m.pauseConfirmed?'checked':''} onchange="TC.setFieldRender('mental.pauseConfirmed', this.checked)"> 我已經完成暫停／呼吸，準備繼續
     </label>
   </div>` : ''}
@@ -1086,9 +1092,21 @@ function renderQnA(){
 }
 
 /* ---------- Settings ---------- */
+const FONT_SCALES = [
+  {value:0.85, label:'小'},
+  {value:1, label:'標準'},
+  {value:1.15, label:'大'},
+  {value:1.3, label:'特大'},
+];
 function renderSettings(){
   const ai = DB.settings.ai;
+  const fs = DB.settings.fontScale;
   return `<div class="card">
+    <h2>🔠 文字大小</h2>
+    <p class="muted">調整整個 App 的文字大小，設定會記在這支手機上。</p>
+    <div class="chip-row">${FONT_SCALES.map(o=>`<button class="chip ${fs===o.value?'selected':''}" onclick="TC.setFontScale(${o.value})">${o.label}</button>`).join('')}</div>
+  </div>
+  <div class="card">
     <h2>🤖 AI 教練（選用）</h2>
     <p class="muted">預設完全不使用 AI、也不會有任何網路連線。若你在這裡填入自己的 API Key 並選擇啟用，之後在「教練提問」與「行動方案」畫面點擊 AI 按鈕時，那一次的事件內容會直接從你的裝置送到你選擇的服務商（OpenAI／Google／Anthropic），不會經過任何第三方伺服器。API Key 只會存在這支手機的瀏覽器裡，請自行妥善保管，不要分享給他人。</p>
     <label class="field">啟用的 AI 服務</label>
