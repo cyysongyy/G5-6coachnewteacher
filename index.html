@@ -243,9 +243,48 @@ const THEORY_LIBRARY = [
   {cat:'E',name:'界線管理 Boundary Management',principle:'清楚的界線能保護長期合作關係與個人能量。',app:'明確說出自己能／不能配合的範圍，而不是默默承受。'},
 ];
 
+const AI_PROVIDERS = {
+  openai: {label:'OpenAI', defaultModel:'gpt-4o-mini', keyHint:'sk-...'},
+  gemini: {label:'Google Gemini', defaultModel:'gemini-2.0-flash', keyHint:'AIza...'},
+  claude: {label:'Anthropic Claude', defaultModel:'claude-3-5-haiku-latest', keyHint:'sk-ant-...'},
+};
+
+const AI_SYSTEM_PROMPT = `你是一位資深國小高年級導師、教師教學教練、班級經營專家與心理素質教練。
+你的任務不是立即替教師解決問題，而是協助教師：
+1. 看清楚發生了什麼。
+2. 區分事實與解讀。
+3. 判斷問題層次。
+4. 判斷風險。
+5. 選擇適當的教育理論。
+6. 提供立即、短期、長期策略。
+7. 協助教師調節自己的情緒。
+8. 訓練認知彈性與心理韌性。
+9. 找到教師自己能控制的下一個行動。
+10. 將事件轉化為下一次教師實驗。
+
+不要責備教師，不要過度心理分析學生，不要把所有問題歸因於學生，不要立即建議懲罰。
+優先考慮順序：安全 → 關係 → 規範 → 教學 → 系統 → 預防。
+請一律用繁體中文回覆，語氣溫暖、專業、具體，避免空泛的鼓勵語。`;
+
 const LS_KEY = 'teacherCoachData_v1';
 
 /* ---------- 資料存取 ---------- */
+function defaultSettings(){
+  return { ai: {
+    provider: '',
+    keys: {openai:'', gemini:'', claude:''},
+    models: {openai:AI_PROVIDERS.openai.defaultModel, gemini:AI_PROVIDERS.gemini.defaultModel, claude:AI_PROVIDERS.claude.defaultModel},
+  }};
+}
+function ensureSettings(){
+  const d = defaultSettings();
+  if(!DB.settings) DB.settings = d;
+  const ai = DB.settings.ai || {};
+  DB.settings.ai = Object.assign({}, d.ai, ai, {
+    keys: Object.assign({}, d.ai.keys, ai.keys||{}),
+    models: Object.assign({}, d.ai.models, ai.models||{}),
+  });
+}
 function loadData(){
   try{
     const raw = localStorage.getItem(LS_KEY);
@@ -255,6 +294,62 @@ function loadData(){
 }
 function saveData(){ localStorage.setItem(LS_KEY, JSON.stringify(DB)); }
 let DB = loadData();
+ensureSettings();
+
+async function callAI(systemPrompt, userPrompt){
+  const ai = DB.settings.ai;
+  const provider = ai.provider;
+  if(!provider) throw new Error('尚未設定 AI 提供者');
+  const key = (ai.keys[provider]||'').trim();
+  if(!key) throw new Error('尚未輸入 API Key');
+  const model = ai.models[provider] || AI_PROVIDERS[provider].defaultModel;
+
+  if(provider==='openai'){
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+      body: JSON.stringify({ model, messages:[{role:'system',content:systemPrompt},{role:'user',content:userPrompt}], max_tokens:700, temperature:0.7 }),
+    });
+    const data = await res.json().catch(()=>({}));
+    if(!res.ok) throw new Error((data.error&&data.error.message) || ('OpenAI 呼叫失敗（'+res.status+'）'));
+    return (data.choices[0].message.content||'').trim();
+  }
+  if(provider==='gemini'){
+    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model)+':generateContent?key='+encodeURIComponent(key), {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ systemInstruction:{parts:[{text:systemPrompt}]}, contents:[{role:'user', parts:[{text:userPrompt}]}] }),
+    });
+    const data = await res.json().catch(()=>({}));
+    if(!res.ok) throw new Error((data.error&&data.error.message) || ('Gemini 呼叫失敗（'+res.status+'）'));
+    return (data.candidates[0].content.parts.map(p=>p.text).join('')).trim();
+  }
+  if(provider==='claude'){
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body: JSON.stringify({ model, max_tokens:800, system:systemPrompt, messages:[{role:'user',content:userPrompt}] }),
+    });
+    const data = await res.json().catch(()=>({}));
+    if(!res.ok) throw new Error((data.error&&data.error.message) || ('Claude 呼叫失敗（'+res.status+'）'));
+    return data.content.map(c=>c.text||'').join('').trim();
+  }
+  throw new Error('不支援的提供者');
+}
+
+function parseSolutionAI(text){
+  const grab = (label, stopPattern) => {
+    const re = stopPattern
+      ? new RegExp(label+'\\s*[:：]\\s*([\\s\\S]*?)(?='+stopPattern+')', 'i')
+      : new RegExp(label+'\\s*[:：]\\s*([\\s\\S]*)$', 'i');
+    const m = text.match(re);
+    return m ? m[1].trim() : '';
+  };
+  const now = grab('NOW', 'TOMORROW\\s*[:：]|LONGTERM\\s*[:：]');
+  const tomorrow = grab('TOMORROW', 'LONGTERM\\s*[:：]');
+  const longTerm = grab('LONGTERM', '');
+  if(!now && !tomorrow && !longTerm) return null;
+  return {now, tomorrow, longTerm};
+}
 
 function uid(){ return 'e' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
 function todayStr(){ return new Date().toISOString().slice(0,10); }
@@ -297,7 +392,7 @@ const TC = {
         date:todayStr(), period:'上課中', location:'', people:'', behaviors:'', teacherAction:'',
         category:{primary:precat||null, secondary:null}, level:null,
         riskFlags:[], isHighRisk:false,
-        coachAnswers:[], theories:[],
+        coachAnswers:[], theories:[], aiAdvice:'',
         solutions:{now:'',tomorrow:'',longTerm:''},
         mental:{emotion:null,emotionScore:50,pauseConfirmed:false,fact:'',interpretation:'',resilienceSkill:null,resilienceNote:'',agency:[]},
         reflection:'', experiment:{plan:'',metric:'',baseline:'',target:'',result:'',effective:null},
@@ -409,7 +504,7 @@ const TC = {
         const data = JSON.parse(reader.result);
         if(!data || !Array.isArray(data.events)) throw new Error('格式不正確');
         if(!confirm('匯入將會覆蓋目前手機裡的所有資料，確定嗎？')) return;
-        DB = data; saveData(); render(); toast('匯入完成');
+        DB = data; ensureSettings(); saveData(); render(); toast('匯入完成');
       }catch(e){ alert('匯入失敗：檔案格式不正確'); }
     };
     reader.readAsText(file);
@@ -417,7 +512,60 @@ const TC = {
   clearAll(){
     const v = prompt('這將刪除這支手機裡的所有記錄，且無法復原。輸入「刪除」以確認：');
     if(v!=='刪除') return;
-    DB = {events:[]}; saveData(); render(); toast('資料已清除');
+    DB = {events:[]}; ensureSettings(); saveData(); render(); toast('資料已清除');
+  },
+
+  setAIProvider(provider){ DB.settings.ai.provider = provider; saveData(); render(); },
+  setAIKey(provider, value){ DB.settings.ai.keys[provider] = value; saveData(); },
+  setAIModel(provider, value){ DB.settings.ai.models[provider] = value; saveData(); },
+  async testAIConnection(){
+    const provider = DB.settings.ai.provider;
+    if(!provider){ toast('請先選擇 AI 服務'); return; }
+    if(!DB.settings.ai.keys[provider]){ toast('請先輸入 API Key'); return; }
+    toast('連線測試中…');
+    try{
+      const r = await callAI('你是一個連線測試助手。', '請只回覆兩個字：成功');
+      toast('連線成功：'+r.slice(0,20));
+    }catch(e){ toast('連線失敗：'+e.message); }
+  },
+
+  async askAICoach(){
+    const f=this.flow, d=f.draft;
+    if(!DB.settings.ai.provider){ toast('請先在「設定」頁設定 AI'); return; }
+    f.aiLoading = true; render();
+    try{
+      const cat = catInfo(d.category.primary);
+      const level = LEVELS.find(l=>l.id===d.level);
+      const qs = COACH_QUESTIONS[d.category.primary] || [];
+      const userPrompt = '事件名稱：'+d.title+'\n事件描述：'+d.description+
+        '\n類別：'+(cat?cat.label:'未分類')+'\n問題層次：'+(level?level.label:'未選擇')+
+        '\n場所／時段：'+(d.location||'—')+' / '+d.period+
+        '\n涉及人物：'+(d.people||'—')+'\n可觀察行為：'+(d.behaviors||'—')+
+        '\n教師目前處置：'+(d.teacherAction||'—')+
+        '\n\n教師對教練提問的回答：\n'+qs.map((q,i)=>'- '+q+'：'+(d.coachAnswers[i]||'（未填寫）')).join('\n')+
+        '\n\n請給這位教師一段簡短、具體、溫暖的教練式回饋，包含：一個關鍵洞察（One Insight）、一個現在就能做的行動（One Action）、一個心理素質練習（One Mental Strength Practice），並說明最適合這個事件的教育理論是什麼、為什麼。請用 200-300 字的繁體中文回覆，不要用條列符號以外的標題。';
+      d.aiAdvice = await callAI(AI_SYSTEM_PROMPT, userPrompt);
+    }catch(e){ toast('AI 呼叫失敗：'+e.message); }
+    f.aiLoading = false; render();
+  },
+  async generateAISolutions(){
+    const f=this.flow, d=f.draft;
+    if(!DB.settings.ai.provider){ toast('請先在「設定」頁設定 AI'); return; }
+    f.aiLoadingSolution = true; render();
+    try{
+      const cat = catInfo(d.category.primary);
+      const level = LEVELS.find(l=>l.id===d.level);
+      const userPrompt = '事件描述：'+d.description+'\n類別：'+(cat?cat.label:'未分類')+
+        '\n問題層次：'+(level?level.label:'未選擇')+'\n可觀察行為：'+(d.behaviors||'—')+
+        '\n教師目前處置：'+(d.teacherAction||'—')+
+        '\n教師的教練回答：'+((d.coachAnswers||[]).filter(Boolean).join('；')||'（無）')+
+        '\n\n請針對這個事件提供三層行動方案，「只」用以下格式回覆，不要有任何其他文字或標題：\nNOW: (現在立刻可以做的事)\nTOMORROW: (明天可以做的具體行動，可包含對話句型)\nLONGTERM: (長期的預防或系統性做法，可引用一個教育理論)';
+      const result = await callAI(AI_SYSTEM_PROMPT, userPrompt);
+      const parsed = parseSolutionAI(result);
+      if(parsed){ d.solutions = parsed; }
+      else { d.solutions.now = result; toast('AI 回覆格式不如預期，已整段放入 NOW 欄位，請自行調整'); }
+    }catch(e){ toast('AI 呼叫失敗：'+e.message); }
+    f.aiLoadingSolution = false; render();
   },
 };
 
@@ -576,6 +724,9 @@ function renderDetail(id){
         ${ev.mental.agency&&ev.mental.agency.length?`<div class="kv"><span class="k">我能控制</span><span>${ev.mental.agency.map(esc).join('、')}</span></div>`:''}
       </div>`;
     }
+    if(ev.aiAdvice){
+      html += `<div class="card"><h2>✨ AI 教練建議</h2><p class="muted" style="white-space:pre-wrap">${esc(ev.aiAdvice)}</p></div>`;
+    }
   }
   if(ev.reflection){
     html += `<div class="card"><h2>反思</h2><p class="muted">${esc(ev.reflection)}</p></div>`;
@@ -691,6 +842,13 @@ function renderStepCoach(d){
     ${theories.map(t=>`<div class="theory-card"><span class="tag">${t.name}</span>
       <p><b>原則：</b>${t.principle}</p><p><b>應用：</b>${t.app}</p></div>`).join('')}
   </div>
+  <div class="card">
+    <h2>✨ AI 教練建議（選用）</h2>
+    ${DB.settings.ai.provider ? `
+      <button class="ghost-btn" onclick="TC.askAICoach()" ${TC.flow.aiLoading?'disabled':''}>${TC.flow.aiLoading?'思考中…':'詢問 AI 教練'}</button>
+      ${d.aiAdvice ? `<textarea style="margin-top:10px; min-height:120px;" oninput="TC.setField('aiAdvice', this.value)">${esc(d.aiAdvice)}</textarea>` : ''}
+    ` : `<p class="muted">尚未設定 AI。到「設定」頁輸入你自己的 API Key 即可啟用，不使用完全不影響其他功能。</p>`}
+  </div>
   <div class="footer-nav">
     <button class="ghost-btn" onclick="TC.prevStep()">上一步</button>
     <button class="big-btn" onclick="TC.nextStep()">下一步</button>
@@ -699,6 +857,9 @@ function renderStepCoach(d){
 
 function renderStepSolution(d){
   return `<div class="card">
+    ${DB.settings.ai.provider ? `<button class="ghost-btn" onclick="TC.generateAISolutions()" ${TC.flow.aiLoadingSolution?'disabled':''}>${TC.flow.aiLoadingSolution?'AI 生成中…':'✨ 用 AI 生成客製化建議'}</button>` : `<p class="muted" style="margin:0">以下為預設模板，可自行編輯。到「設定」頁可啟用 AI，生成更客製化的建議。</p>`}
+  </div>
+  <div class="card">
     <h2>🟢 NOW｜現在怎麼辦？</h2>
     <textarea oninput="TC.setField('solutions.now', this.value)">${esc(d.solutions.now)}</textarea>
   </div>
@@ -853,7 +1014,27 @@ function renderDashboard(){
 
 /* ---------- Settings ---------- */
 function renderSettings(){
+  const ai = DB.settings.ai;
   return `<div class="card">
+    <h2>🤖 AI 教練（選用）</h2>
+    <p class="muted">預設完全不使用 AI、也不會有任何網路連線。若你在這裡填入自己的 API Key 並選擇啟用，之後在「教練提問」與「行動方案」畫面點擊 AI 按鈕時，那一次的事件內容會直接從你的裝置送到你選擇的服務商（OpenAI／Google／Anthropic），不會經過任何第三方伺服器。API Key 只會存在這支手機的瀏覽器裡，請自行妥善保管，不要分享給他人。</p>
+    <label class="field">啟用的 AI 服務</label>
+    <select onchange="TC.setAIProvider(this.value)">
+      <option value="" ${!ai.provider?'selected':''}>不使用（預設，完全離線）</option>
+      <option value="openai" ${ai.provider==='openai'?'selected':''}>OpenAI</option>
+      <option value="gemini" ${ai.provider==='gemini'?'selected':''}>Google Gemini</option>
+      <option value="claude" ${ai.provider==='claude'?'selected':''}>Anthropic Claude</option>
+    </select>
+    ${ai.provider ? `
+      <label class="field">${AI_PROVIDERS[ai.provider].label} API Key</label>
+      <input type="password" value="${esc(ai.keys[ai.provider])}" placeholder="${AI_PROVIDERS[ai.provider].keyHint}" oninput="TC.setAIKey('${ai.provider}', this.value)" autocomplete="off">
+      <label class="field">模型（可自行修改）</label>
+      <input type="text" value="${esc(ai.models[ai.provider])}" oninput="TC.setAIModel('${ai.provider}', this.value)">
+      <div style="height:10px"></div>
+      <button class="ghost-btn" onclick="TC.testAIConnection()">🔌 測試連線</button>
+    ` : ''}
+  </div>
+  <div class="card">
     <h2>資料與隱私</h2>
     <p class="muted">所有資料只儲存在這支手機（瀏覽器）的本機空間裡。GitHub 只提供這個網頁程式本身，不會蒐集、上傳或儲存你的任何事件內容。刪除瀏覽器資料或換手機，記錄就不會存在，請定期備份。</p>
   </div>
