@@ -174,7 +174,6 @@ a.linklike{ color:var(--accent); text-decoration:none; font-weight:600; }
     <button class="tab" data-tab="home" onclick="TC.goTab('home')"><span class="ti">🏠</span>今天</button>
     <button class="tab" data-tab="history" onclick="TC.goTab('history')"><span class="ti">🗂️</span>記錄</button>
     <button class="tab" data-tab="dashboard" onclick="TC.goTab('dashboard')"><span class="ti">📊</span>成長</button>
-    <button class="tab" data-tab="qna" onclick="TC.goTab('qna')"><span class="ti">💬</span>問答</button>
     <button class="tab" data-tab="settings" onclick="TC.goTab('settings')"><span class="ti">⚙️</span>設定</button>
   </nav>
 </div>
@@ -334,7 +333,7 @@ const AI_QNA_SYSTEM_PROMPT = `你是一位資深國小高年級導師、教學�
 遇到明顯涉及人身安全、法律責任、或需要正式通報的狀況，請提醒教師依學校正式程序處理、諮詢輔導室或行政主管，不要只給操作建議。
 請一律用繁體中文回覆，語氣專業、溫暖、簡潔，避免空泛的鼓勵語，也不要用「我不是專業人士」這類免責聲明開頭。`;
 
-const APP_BUILD = 'v1.7 · 2026-08-29 03:38 UTC';
+const APP_BUILD = 'v1.8 · 2026-09-18 10:09 UTC';
 
 const LS_KEY = 'teacherCoachData_v1';
 
@@ -670,14 +669,6 @@ const TC = {
     }catch(e){ toast('AI 呼叫失敗：'+e.message); }
     this.qnaLoading = false; render();
   },
-  deleteQnA(id){
-    DB.qna = DB.qna.filter(q=>q.id!==id);
-    saveData(); render();
-  },
-  clearQnA(){
-    if(!confirm('確定要清空所有問答紀錄嗎？')) return;
-    DB.qna = []; saveData(); render();
-  },
 };
 
 /* ---------- Mental score 計算 ---------- */
@@ -744,11 +735,10 @@ function render(){
   if(TC.flow){ title.textContent = flowTitle(TC.flow); root.innerHTML = renderFlow(TC.flow); return; }
   if(TC.detailId){ title.textContent = '事件詳情'; root.innerHTML = renderDetail(TC.detailId); return; }
 
-  title.textContent = {home:'Teacher Coach', history:'事件記錄', dashboard:'教師成長', qna:'快速問答', settings:'設定'}[TC.tab];
+  title.textContent = {home:'Teacher Coach', history:'事件記錄', dashboard:'教師成長', settings:'設定'}[TC.tab];
   if(TC.tab==='home') root.innerHTML = renderHome();
   else if(TC.tab==='history') root.innerHTML = renderHistory();
   else if(TC.tab==='dashboard') root.innerHTML = renderDashboard();
-  else if(TC.tab==='qna') root.innerHTML = renderQnA();
   else root.innerHTML = renderSettings();
 }
 
@@ -786,6 +776,23 @@ function renderHome(){
     </span>
     <span class="cta-arrow">›</span>
   </button>`;
+
+  html += `<div class="card">
+    <h2>💬 有問題想問？</h2>`;
+  if(!DB.settings.ai.provider){
+    html += `<p class="muted" style="margin:0">直接打字問，AI 立刻回答。<a class="linklike" onclick="TC.goTab('settings')">到「設定」設定好 AI</a> 就能用。</p>`;
+  } else {
+    html += `<textarea id="qnaInput" placeholder="例如：班上有一個學生很內向，都不參與小組討論，怎麼辦？"></textarea>
+      <button class="ghost-btn" style="margin-top:10px" onclick="TC.askQnA()" ${TC.qnaLoading?'disabled':''}>${TC.qnaLoading?'思考中…':'送出'}</button>`;
+    const lastQna = DB.qna[DB.qna.length-1];
+    if(lastQna){
+      html += `<div style="margin-top:14px; padding-top:14px; border-top:1px solid var(--border)">
+        <p style="font-weight:700; margin:0 0 6px">${esc(lastQna.question)}</p>
+        <p class="muted" style="white-space:pre-wrap; margin:0">${esc(lastQna.answer)}</p>
+      </div>`;
+    }
+  }
+  html += `</div>`;
 
   if(pending){
     html += `<div class="card">
@@ -1194,33 +1201,6 @@ function renderDashboard(){
     }).join('') || '<p class="muted">尚無資料</p>'}
   </div>`;
 
-  return html;
-}
-
-/* ---------- Q&A ---------- */
-function renderQnA(){
-  let html = `<div class="card">
-    <h2>💬 快速問答</h2>
-    <p class="muted">直接輸入任何跟班級經營、學生輔導、教學或人際溝通有關的問題，AI 會直接回答——不會經過完整的事件記錄流程，這裡的內容也不會算進事件記錄或成長儀表板。</p>`;
-  if(!DB.settings.ai.provider){
-    html += `<p class="hint">尚未設定 AI。<a class="linklike" onclick="TC.goTab('settings')">前往「設定」頁</a>輸入你自己的 API Key 即可使用。</p></div>`;
-    return html;
-  }
-  html += `<textarea id="qnaInput" placeholder="例如：班上有一個學生很內向，都不參與小組討論，怎麼辦？"></textarea>
-    <button class="big-btn" style="margin-top:10px" onclick="TC.askQnA()" ${TC.qnaLoading?'disabled':''}>${TC.qnaLoading?'思考中…':'送出'}</button>
-  </div>`;
-
-  const list = DB.qna.slice().reverse();
-  if(list.length){
-    html += list.map(q => `<div class="card">
-      <p style="font-weight:700; margin:0 0 8px">${esc(q.question)}</p>
-      <p class="muted" style="white-space:pre-wrap; margin:0">${esc(q.answer)}</p>
-      <div class="footer-nav" style="margin-top:12px">
-        <button class="ghost-btn danger-btn" onclick="TC.deleteQnA('${q.id}')">刪除這則</button>
-      </div>
-    </div>`).join('');
-    html += `<button class="ghost-btn danger-btn" onclick="TC.clearQnA()">清空所有問答紀錄</button>`;
-  }
   return html;
 }
 
